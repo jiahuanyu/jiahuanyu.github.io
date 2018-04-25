@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next muse use-motion" lang="zh-Hans">
+<html class="theme-next pisces use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="jiahuan, JIAHUAN, JiaHuan, Android, blog" />
 
 
 
@@ -97,11 +97,11 @@
 <meta name="description" content="创建Java工程，配置其gradle1234567891011121314151617apply plugin: &amp;apos;java-library&amp;apos;sourceCompatibility = &amp;quot;1.7&amp;quot;targetCompatibility = &amp;quot;1.7&amp;quot;jar &amp;#123;    manifest &amp;#123;        attribut">
 <meta property="og:type" content="article">
 <meta property="og:title" content="AndroidStudio 3.X 自定义Lint">
-<meta property="og:url" content="http://yoursite.com/2018/04/26/AndroidStudio-3-X-自定义Lint/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:url" content="http://blog.jiahuan.me/2018/04/26/AndroidStudio-3-X-自定义Lint/index.html">
+<meta property="og:site_name" content="碎片笔记">
 <meta property="og:description" content="创建Java工程，配置其gradle1234567891011121314151617apply plugin: &amp;apos;java-library&amp;apos;sourceCompatibility = &amp;quot;1.7&amp;quot;targetCompatibility = &amp;quot;1.7&amp;quot;jar &amp;#123;    manifest &amp;#123;        attribut">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-25T06:58:27.121Z">
+<meta property="og:updated_time" content="2018-04-25T12:51:15.210Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="AndroidStudio 3.X 自定义Lint">
 <meta name="twitter:description" content="创建Java工程，配置其gradle1234567891011121314151617apply plugin: &amp;apos;java-library&amp;apos;sourceCompatibility = &amp;quot;1.7&amp;quot;targetCompatibility = &amp;quot;1.7&amp;quot;jar &amp;#123;    manifest &amp;#123;        attribut">
@@ -112,7 +112,7 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Muse',
+    scheme: 'Pisces',
     sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
     tabs: true,
@@ -133,13 +133,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/04/26/AndroidStudio-3-X-自定义Lint/"/>
+  <link rel="canonical" href="http://blog.jiahuan.me/2018/04/26/AndroidStudio-3-X-自定义Lint/"/>
 
 
 
 
 
-  <title>AndroidStudio 3.X 自定义Lint | Hexo</title>
+  <title>AndroidStudio 3.X 自定义Lint | 碎片笔记</title>
   
 
 
@@ -175,7 +175,7 @@
     <div class="custom-logo-site-title">
       <a href="/"  class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Hexo</span>
+        <span class="site-title">碎片笔记</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
@@ -219,16 +219,6 @@
           </a>
         </li>
       
-        
-        <li class="menu-item menu-item-tags">
-          <a href="/tags/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
-            
-            标签
-          </a>
-        </li>
-      
 
       
     </ul>
@@ -262,16 +252,16 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/04/26/AndroidStudio-3-X-自定义Lint/">
+    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/04/26/AndroidStudio-3-X-自定义Lint/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="John Doe">
+      <meta itemprop="name" content="JiaHuan">
       <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="image" content="/images/avatar.jpeg">
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="碎片笔记">
     </span>
 
     
@@ -331,7 +321,7 @@
       
         <h2 id="创建Java工程，配置其gradle"><a href="#创建Java工程，配置其gradle" class="headerlink" title="创建Java工程，配置其gradle"></a>创建Java工程，配置其gradle</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;java-library&apos;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">sourceCompatibility = &quot;1.7&quot;</span><br><span class="line">targetCompatibility = &quot;1.7&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">jar &#123;</span><br><span class="line">    manifest &#123;</span><br><span class="line">        attributes(&quot;Lint-Registry-v2&quot;: &quot;me.jiahuan.androidlearn.clint.CIssueRegistry&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compileOnly &quot;com.android.tools.lint:lint-api:26.1.2&quot;</span><br><span class="line">    compileOnly &quot;com.android.tools.lint:lint-checks:26.1.2&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="创建Android-Library工程，配置其gradle"><a href="#创建Android-Library工程，配置其gradle" class="headerlink" title="创建Android Library工程，配置其gradle"></a>创建Android Library工程，配置其gradle</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.library&apos;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion common.compileSdkVersion</span><br><span class="line"></span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        minSdkVersion common.minSdkVersion</span><br><span class="line">        targetSdkVersion common.targetSdkVersion</span><br><span class="line">        versionCode common.versionCode</span><br><span class="line">        versionName common.versionName</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            minifyEnabled false</span><br><span class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    lintChecks project(&apos;:clint&apos;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.jianshu.com/p/a297714bb99b" target="_blank" rel="noopener">https://www.jianshu.com/p/a297714bb99b</a><br>美团外卖<a href="https://zhuanlan.zhihu.com/p/35608859" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/35608859</a></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.jianshu.com/p/a297714bb99b" target="_blank" rel="noopener">https://www.jianshu.com/p/a297714bb99b</a><br><a href="https://zhuanlan.zhihu.com/p/35608859" target="_blank" rel="noopener">美团外卖https://zhuanlan.zhihu.com/p/35608859</a><br><a href="https://medium.com/@vanniktech/writing-your-first-lint-check-39ad0e90b9e6" target="_blank" rel="noopener">https://medium.com/@vanniktech/writing-your-first-lint-check-39ad0e90b9e6</a></p>
 
       
     </div>
@@ -356,8 +346,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/04/25/AndroidStudio-3-X-自定义Lint/" rel="next" title="">
-                <i class="fa fa-chevron-left"></i> 
+              <a href="/2018/04/25/AndroidStudio上传项目至maven仓库/" rel="next" title="AndroidStudio上传项目至maven仓库">
+                <i class="fa fa-chevron-left"></i> AndroidStudio上传项目至maven仓库
               </a>
             
           </div>
@@ -429,9 +419,9 @@
       <section class="site-overview sidebar-panel">
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
           <img class="site-author-image" itemprop="image"
-               src="/images/avatar.gif"
-               alt="John Doe" />
-          <p class="site-author-name" itemprop="name">John Doe</p>
+               src="/images/avatar.jpeg"
+               alt="JiaHuan" />
+          <p class="site-author-name" itemprop="name">JiaHuan</p>
            
               <p class="site-description motion-element" itemprop="description"></p>
           
@@ -441,7 +431,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -456,6 +446,19 @@
         
 
         <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jiahuanyu" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GitHub
+                    
+                </a>
+              </span>
+            
           
         </div>
 
@@ -502,12 +505,12 @@
       <div class="footer-inner">
         <div class="copyright" >
   
-  &copy; 
+  &copy;  2016 - 
   <span itemprop="copyrightYear">2018</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">John Doe</span>
+  <span class="author" itemprop="copyrightHolder">JiaHuan</span>
 </div>
 
 
@@ -518,7 +521,7 @@
 <div class="theme-info">
   主题 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Muse
+    NexT.Pisces
   </a>
 </div>
 
@@ -597,6 +600,13 @@
 
   
   
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
+
+
 
   
   <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
