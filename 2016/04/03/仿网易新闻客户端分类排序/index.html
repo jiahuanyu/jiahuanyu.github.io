@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next pisces use-motion" lang="zh-Hans">
+<html class="theme-next mist use-motion" lang="zh-Hans">
 <head>
   <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -78,7 +78,7 @@
 <link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
 
 
-  <meta name="keywords" content="jiahuan, JIAHUAN, JiaHuan, Android, blog" />
+  <meta name="keywords" content="jiahuan, JIAHUAN, JiaHuan, android, Android, blog" />
 
 
 
@@ -104,7 +104,7 @@
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/636361-8d572e9ad8efe169.gif?imageMogr2/auto-orient/strip">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/636361-b562a11c78959ff1.gif?imageMogr2/auto-orient/strip">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/636361-3c978e1dbb98f7f4.gif?imageMogr2/auto-orient/strip">
-<meta property="og:updated_time" content="2018-04-25T12:51:16.868Z">
+<meta property="og:updated_time" content="2018-04-26T02:20:04.704Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="仿网易新闻客户端分类排序">
 <meta name="twitter:description" content="效果图先来看看网易新闻客户端以及自己实现的效果图，效果当然还是网易的好 如何实现拖拽一个Item用WindowManager添加一个ImageView，并且将这个ImageView的显示图片设置成被拖拽item的截图，截图可以通过View的getDrawingCache获得。拖拽的时候，隐藏原始的item。处理触摸事件的ActionMove，调整ImageView的位置，跟随手指移动。在Actio">
@@ -116,7 +116,7 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Pisces',
+    scheme: 'Mist',
     sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
     tabs: true,
@@ -323,7 +323,7 @@
       
 
       
-        <h2 id="效果图"><a href="#效果图" class="headerlink" title="效果图"></a>效果图</h2><p>先来看看网易新闻客户端以及自己实现的效果图，效果当然还是网易的好<br><img src="http://upload-images.jianshu.io/upload_images/636361-8d572e9ad8efe169.gif?imageMogr2/auto-orient/strip" alt="wangyixinwen.gif"><img src="http://upload-images.jianshu.io/upload_images/636361-b562a11c78959ff1.gif?imageMogr2/auto-orient/strip" alt="gridviewsort.gif"></p>
+        <h2 id="效果图"><a href="#效果图" class="headerlink" title="效果图"></a>效果图</h2><p>先来看看网易新闻客户端以及自己实现的效果图，效果当然还是网易的好<br><img src="http://upload-images.jianshu.io/upload_images/636361-8d572e9ad8efe169.gif?imageMogr2/auto-orient/strip" alt=""><br><img src="http://upload-images.jianshu.io/upload_images/636361-b562a11c78959ff1.gif?imageMogr2/auto-orient/strip" alt=""></p>
 <h2 id="如何实现拖拽一个Item"><a href="#如何实现拖拽一个Item" class="headerlink" title="如何实现拖拽一个Item"></a>如何实现拖拽一个Item</h2><p>用<code>WindowManager</code>添加一个<code>ImageView</code>，并且将这个<code>ImageView</code>的显示图片设置成被拖拽item的截图，截图可以通过<code>View</code>的<code>getDrawingCache</code>获得。拖拽的时候，隐藏原始的item。处理触摸事件的<code>ActionMove</code>，调整<code>ImageView</code>的位置，跟随手指移动。在<code>ActionUp</code>的时候<code>removeView</code></p>
 <p>GridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onItemLongClick</span><span class="params">(AdapterView&lt;?&gt; adapterView, View view, <span class="keyword">int</span> i, <span class="keyword">long</span> l)</span></span></span><br><span class="line"><span class="function">   </span>&#123;</span><br><span class="line">       <span class="comment">// 至少有两个item的时候，才有排序</span></span><br><span class="line">       <span class="keyword">if</span> (getChildCount() &gt;= <span class="number">2</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           mView = view;</span><br><span class="line">           <span class="comment">// 在调用getDrawingCache必须先调用</span></span><br><span class="line">           view.setDrawingCacheEnabled(<span class="keyword">true</span>);</span><br><span class="line">           <span class="comment">// 获取截图并设置</span></span><br><span class="line">           Bitmap bitmap = view.getDrawingCache();</span><br><span class="line">           mDragItemView.setImageBitmap(bitmap);</span><br><span class="line">           <span class="comment">// 设置拖拽的imageview的params</span></span><br><span class="line">           mDragItemLayoutParams.gravity = Gravity.TOP | Gravity.LEFT;</span><br><span class="line">           mDragItemLayoutParams.width = bitmap.getWidth();</span><br><span class="line">           mDragItemLayoutParams.height = bitmap.getHeight();</span><br><span class="line">           mDragItemLayoutParams.x = (mDownX - mDragItemLayoutParams.width / <span class="number">2</span>);</span><br><span class="line">           mDragItemLayoutParams.y = (mDownY - mDragItemLayoutParams.height / <span class="number">2</span>);</span><br><span class="line">           <span class="comment">// 设置拖拽imageview的中心位于长按点击点</span></span><br><span class="line">           mDragItemLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  <span class="comment">//不接受按键事件</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  <span class="comment">// 不接收触摸事件</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON   <span class="comment">// 保持常亮</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN; <span class="comment">// place the window within the entire screen, ignoring decorations around the border (such as the status bar)</span></span><br><span class="line">           mDragItemLayoutParams.format = PixelFormat.TRANSLUCENT;</span><br><span class="line">           mDragItemLayoutParams.windowAnimations = <span class="number">0</span>;</span><br><span class="line">           <span class="comment">// 往WindowManager中添加拖拽的View</span></span><br><span class="line">           mWindowManager.addView(mDragItemView, mDragItemLayoutParams);</span><br><span class="line"></span><br><span class="line">           ((GridViewSortAdapter) getAdapter()).init();</span><br><span class="line"></span><br><span class="line">           ((GridViewSortAdapter) getAdapter()).hideView(i);</span><br><span class="line"></span><br><span class="line">           Log.d(TAG, <span class="string">"long click = "</span> + i);</span><br><span class="line"></span><br><span class="line">           mDragStarted = <span class="keyword">true</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTouchEvent</span><span class="params">(MotionEvent ev)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">switch</span> (ev.getAction() &amp; ev.getActionMasked())</span><br><span class="line">   &#123;</span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_DOWN:</span><br><span class="line">           mDownX = (<span class="keyword">int</span>) ev.getRawX();</span><br><span class="line">           mDownY = (<span class="keyword">int</span>) ev.getRawY();</span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_MOVE:</span><br><span class="line">           <span class="keyword">if</span> (mDragStarted)</span><br><span class="line">           &#123;</span><br><span class="line">                <span class="comment">// 保持中心</span></span><br><span class="line">               mDragItemLayoutParams.x = (<span class="keyword">int</span>) (ev.getRawX() - mDragItemView.getWidth() / <span class="number">2</span>);</span><br><span class="line">               mDragItemLayoutParams.y = (<span class="keyword">int</span>) (ev.getRawY() - mDragItemView.getHeight() / <span class="number">2</span>);</span><br><span class="line">               <span class="comment">// 更新params</span></span><br><span class="line">               mWindowManager.updateViewLayout(mDragItemView, mDragItemLayoutParams);</span><br><span class="line">               <span class="comment">// ......</span></span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_UP:</span><br><span class="line">           <span class="comment">// ......</span></span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">super</span>.onTouchEvent(ev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -543,7 +543,7 @@
 <div class="theme-info">
   主题 -
   <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
-    NexT.Pisces
+    NexT.Mist
   </a>
 </div>
 
@@ -622,13 +622,6 @@
 
   
   
-
-
-  <script type="text/javascript" src="/js/src/affix.js?v=5.1.2"></script>
-
-  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.2"></script>
-
-
 
   
   <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
