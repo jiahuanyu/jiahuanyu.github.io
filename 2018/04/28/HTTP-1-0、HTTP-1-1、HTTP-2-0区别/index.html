@@ -94,17 +94,17 @@
 
 
 
-<meta name="description" content="创建Java工程，配置其gradle1234567891011121314151617apply plugin: &amp;apos;java-library&amp;apos;sourceCompatibility = &amp;quot;1.7&amp;quot;targetCompatibility = &amp;quot;1.7&amp;quot;jar &amp;#123;    manifest &amp;#123;        attribut">
+<meta name="description" content="HTTP 0.9HTTP 是基于 TCP/IP 协议的应用层协议。它不涉及数据包（packet）传输，主要规定了客户端和服务器之间的通信格式，默认使用80端口。最早版本是1991年发布的0.9版。该版本极其简单，只有一个命令GET。1GET /index.html 上面命令表示，TCP 连接（connection）建立后，客户端向服务器请求（request）网页index.html。协议规定，服务">
 <meta property="og:type" content="article">
-<meta property="og:title" content="AndroidStudio 3.X 自定义Lint">
-<meta property="og:url" content="http://blog.jiahuan.me/2018/04/26/AndroidStudio-3-X-自定义Lint/index.html">
+<meta property="og:title" content="HTTP 1.0、HTTP 1.1、HTTP 2.0区别">
+<meta property="og:url" content="http://blog.jiahuan.me/2018/04/28/HTTP-1-0、HTTP-1-1、HTTP-2-0区别/index.html">
 <meta property="og:site_name" content="碎片笔记">
-<meta property="og:description" content="创建Java工程，配置其gradle1234567891011121314151617apply plugin: &amp;apos;java-library&amp;apos;sourceCompatibility = &amp;quot;1.7&amp;quot;targetCompatibility = &amp;quot;1.7&amp;quot;jar &amp;#123;    manifest &amp;#123;        attribut">
+<meta property="og:description" content="HTTP 0.9HTTP 是基于 TCP/IP 协议的应用层协议。它不涉及数据包（packet）传输，主要规定了客户端和服务器之间的通信格式，默认使用80端口。最早版本是1991年发布的0.9版。该版本极其简单，只有一个命令GET。1GET /index.html 上面命令表示，TCP 连接（connection）建立后，客户端向服务器请求（request）网页index.html。协议规定，服务">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-04-25T12:51:15.210Z">
+<meta property="og:updated_time" content="2018-05-03T02:27:08.930Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="AndroidStudio 3.X 自定义Lint">
-<meta name="twitter:description" content="创建Java工程，配置其gradle1234567891011121314151617apply plugin: &amp;apos;java-library&amp;apos;sourceCompatibility = &amp;quot;1.7&amp;quot;targetCompatibility = &amp;quot;1.7&amp;quot;jar &amp;#123;    manifest &amp;#123;        attribut">
+<meta name="twitter:title" content="HTTP 1.0、HTTP 1.1、HTTP 2.0区别">
+<meta name="twitter:description" content="HTTP 0.9HTTP 是基于 TCP/IP 协议的应用层协议。它不涉及数据包（packet）传输，主要规定了客户端和服务器之间的通信格式，默认使用80端口。最早版本是1991年发布的0.9版。该版本极其简单，只有一个命令GET。1GET /index.html 上面命令表示，TCP 连接（connection）建立后，客户端向服务器请求（request）网页index.html。协议规定，服务">
 
 
 
@@ -133,13 +133,13 @@
 
 
 
-  <link rel="canonical" href="http://blog.jiahuan.me/2018/04/26/AndroidStudio-3-X-自定义Lint/"/>
+  <link rel="canonical" href="http://blog.jiahuan.me/2018/04/28/HTTP-1-0、HTTP-1-1、HTTP-2-0区别/"/>
 
 
 
 
 
-  <title>AndroidStudio 3.X 自定义Lint | 碎片笔记</title>
+  <title>HTTP 1.0、HTTP 1.1、HTTP 2.0区别 | 碎片笔记</title>
   
 
 
@@ -252,7 +252,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/04/26/AndroidStudio-3-X-自定义Lint/">
+    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/04/28/HTTP-1-0、HTTP-1-1、HTTP-2-0区别/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="JiaHuan">
@@ -269,7 +269,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">AndroidStudio 3.X 自定义Lint</h1>
+          <h1 class="post-title" itemprop="name headline">HTTP 1.0、HTTP 1.1、HTTP 2.0区别</h1>
         
 
         <div class="post-meta">
@@ -281,8 +281,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-26T00:00:00+08:00">
-                2018-04-26
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-28T00:00:00+08:00">
+                2018-04-28
               </time>
             
 
@@ -319,9 +319,34 @@
       
 
       
-        <h2 id="创建Java工程，配置其gradle"><a href="#创建Java工程，配置其gradle" class="headerlink" title="创建Java工程，配置其gradle"></a>创建Java工程，配置其gradle</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;java-library&apos;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">sourceCompatibility = &quot;1.7&quot;</span><br><span class="line">targetCompatibility = &quot;1.7&quot;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">jar &#123;</span><br><span class="line">    manifest &#123;</span><br><span class="line">        attributes(&quot;Lint-Registry-v2&quot;: &quot;me.jiahuan.androidlearn.clint.CIssueRegistry&quot;)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compileOnly &quot;com.android.tools.lint:lint-api:26.1.2&quot;</span><br><span class="line">    compileOnly &quot;com.android.tools.lint:lint-checks:26.1.2&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="创建Android-Library工程，配置其gradle"><a href="#创建Android-Library工程，配置其gradle" class="headerlink" title="创建Android Library工程，配置其gradle"></a>创建Android Library工程，配置其gradle</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.library&apos;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion common.compileSdkVersion</span><br><span class="line"></span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        minSdkVersion common.minSdkVersion</span><br><span class="line">        targetSdkVersion common.targetSdkVersion</span><br><span class="line">        versionCode common.versionCode</span><br><span class="line">        versionName common.versionName</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            minifyEnabled false</span><br><span class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    lintChecks project(&apos;:clint&apos;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://www.jianshu.com/p/a297714bb99b" target="_blank" rel="noopener">https://www.jianshu.com/p/a297714bb99b</a><br><a href="https://zhuanlan.zhihu.com/p/35608859" target="_blank" rel="noopener">美团外卖https://zhuanlan.zhihu.com/p/35608859</a><br><a href="https://medium.com/@vanniktech/writing-your-first-lint-check-39ad0e90b9e6" target="_blank" rel="noopener">https://medium.com/@vanniktech/writing-your-first-lint-check-39ad0e90b9e6</a></p>
+        <h2 id="HTTP-0-9"><a href="#HTTP-0-9" class="headerlink" title="HTTP 0.9"></a>HTTP 0.9</h2><p>HTTP 是基于 TCP/IP 协议的应用层协议。它不涉及数据包（packet）传输，主要规定了客户端和服务器之间的通信格式，默认使用80端口。<br>最早版本是1991年发布的0.9版。该版本极其简单，只有一个命令<code>GET</code>。<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /index.html</span><br></pre></td></tr></table></figure></p>
+<p>上面命令表示，TCP 连接（connection）建立后，客户端向服务器请求（request）网页index.html。<br>协议规定，服务器只能回应HTML格式的字符串，不能回应别的格式。<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span>Hello World<span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>客户端请求以及服务端响应都是ASCII码</li>
+<li>客户端请求由一个回车换行结尾(CRLF)</li>
+<li>服务器响应的是一种超文本语言(HTML)</li>
+<li>连接在文档输出完毕之后自动断开</li>
+</ul>
+<h2 id="HTTP-1-0"><a href="#HTTP-1-0" class="headerlink" title="HTTP 1.0"></a>HTTP 1.0</h2><ul>
+<li>新增<code>POST</code>，<code>HEAD</code>方法</li>
+</ul>
+<p>HTTP/1.0版的主要缺点是，每个TCP连接只能发送一个请求。发送数据完毕，连接就关闭，如果还要请求其他资源，就必须再新建一个连接。TCP连接的新建成本很高，因为需要客户端和服务器三次握手，并且开始时发送速率较慢（slow start）。所以，HTTP1.0版本的性能比较差。随着网页加载的外部资源越来越多，这个问题就愈发突出了。</p>
+<h2 id="HTTP-1-1"><a href="#HTTP-1-1" class="headerlink" title="HTTP 1.1"></a>HTTP 1.1</h2><ul>
+<li>默认持久链接</li>
+<li>新增多种方法</li>
+</ul>
+<h2 id="HTTP-2-0"><a href="#HTTP-2-0" class="headerlink" title="HTTP 2.0"></a>HTTP 2.0</h2><p>先来一个演示，来说明<code>HTTP 2.0</code>相比<code>HTTP 1.1</code>性能上的提升<br><a href="https://http2.akamai.com/demo" target="_blank" rel="noopener">HTTP/2: the Future of the Internet</a></p>
+<ul>
+<li><p>二进制协议<br>所有的信息，包括头信息，主体信息都是二进制</p>
+</li>
+<li><p>头信息压缩</p>
+</li>
+<li><p>多工</p>
+</li>
+<li><p>服务器推送</p>
+</li>
+</ul>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://www.ruanyifeng.com/blog/2016/08/http.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/08/http.html</a></p>
 
       
     </div>
@@ -346,8 +371,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/04/25/AndroidStudio上传项目至maven仓库/" rel="next" title="AndroidStudio上传项目至maven仓库">
-                <i class="fa fa-chevron-left"></i> AndroidStudio上传项目至maven仓库
+              <a href="/2018/04/26/AndroidStudio-3-X-自定义Lint/" rel="next" title="AndroidStudio 3.X 自定义Lint">
+                <i class="fa fa-chevron-left"></i> AndroidStudio 3.X 自定义Lint
               </a>
             
           </div>
@@ -355,10 +380,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/04/28/HTTP-1-0、HTTP-1-1、HTTP-2-0区别/" rel="prev" title="HTTP 1.0、HTTP 1.1、HTTP 2.0区别">
-                HTTP 1.0、HTTP 1.1、HTTP 2.0区别 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -487,7 +508,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建Java工程，配置其gradle"><span class="nav-number">1.</span> <span class="nav-text">创建Java工程，配置其gradle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建Android-Library工程，配置其gradle"><span class="nav-number">2.</span> <span class="nav-text">创建Android Library工程，配置其gradle</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-0-9"><span class="nav-number">1.</span> <span class="nav-text">HTTP 0.9</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-1-0"><span class="nav-number">2.</span> <span class="nav-text">HTTP 1.0</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-1-1"><span class="nav-number">3.</span> <span class="nav-text">HTTP 1.1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-2-0"><span class="nav-number">4.</span> <span class="nav-text">HTTP 2.0</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
             
 
           </div>
