@@ -101,12 +101,13 @@
 <meta property="og:site_name" content="碎片笔记">
 <meta property="og:description" content="JVM内存模型JVM内存模型分为5个部分  PC寄存器  Java虚拟机栈/Java栈 Java堆 方法区 本地方法栈  PC寄存器每一条Java虚拟机线程都有自己的pc寄存器 Java虚拟机栈每一条Java虚拟机线程都有自己的私有Java虚拟机栈，这个栈与线程同时创建，用于存储栈帧。 Java堆在Java虚拟机中，堆是可供各个线程共享的运行时内存区域，也是供所有类实例和数组对象分配内存的区域，G">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://i.loli.net/2018/08/15/5b73f5d3daa94.png">
 <meta property="og:image" content="https://i.loli.net/2018/08/15/5b73f4f90b326.png">
-<meta property="og:updated_time" content="2018-08-15T09:40:21.666Z">
+<meta property="og:updated_time" content="2018-08-15T09:43:54.640Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JVM类加载机制">
 <meta name="twitter:description" content="JVM内存模型JVM内存模型分为5个部分  PC寄存器  Java虚拟机栈/Java栈 Java堆 方法区 本地方法栈  PC寄存器每一条Java虚拟机线程都有自己的pc寄存器 Java虚拟机栈每一条Java虚拟机线程都有自己的私有Java虚拟机栈，这个栈与线程同时创建，用于存储栈帧。 Java堆在Java虚拟机中，堆是可供各个线程共享的运行时内存区域，也是供所有类实例和数组对象分配内存的区域，G">
-<meta name="twitter:image" content="https://i.loli.net/2018/08/15/5b73f4f90b326.png">
+<meta name="twitter:image" content="https://i.loli.net/2018/08/15/5b73f5d3daa94.png">
 
 
 
@@ -334,20 +335,20 @@
 <h3 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h3><p>在Java虚拟机中，堆是可供各个线程共享的运行时内存区域，也是供所有类实例和数组对象分配内存的区域，GC主要针对区域。Java堆在虚拟机启动时创建。</p>
 <h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>在Java虚拟机中，方法区是可供各个线程共享运行时内存区域。方法区存储了每一个类的结构信息，例如，运行时常量池、字段和方法数据、构造函数和普通方法的字节码内容。方法区在虚拟机启动时创建。</p>
 <h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><p>Java虚拟机实现可能会用到传统的栈来支持native方法的执行，这个栈就是本地方法栈，在线程创建时分配。</p>
+<p><img src="https://i.loli.net/2018/08/15/5b73f5d3daa94.png" alt=""></p>
 <h2 id="Java-GC"><a href="#Java-GC" class="headerlink" title="Java GC"></a>Java GC</h2><p>GC（垃圾回收）机制的计算算法是分代收集。GC主要针对的JVM内存模型中的堆区。堆区分为两大部分，新生代和老年代。新生代又分为三个区域，一个eden区，两个survival区。新生代使用复制算法，老年代使用清除标记算法。</p>
 <h2 id="JVM类加载"><a href="#JVM类加载" class="headerlink" title="JVM类加载"></a>JVM类加载</h2><p>JVM加载机制分为三大部分，加载、连接、初始化</p>
-<ol>
-<li><p>加载阶段<br>在堆中生成一个代表这个类的java.lang.class对象，在方法区中存储类的信息。</p>
+<h3 id="加载阶段"><a href="#加载阶段" class="headerlink" title="加载阶段"></a>加载阶段</h3><p>在堆中生成一个代表这个类的java.lang.class对象，在方法区中存储类的信息。</p>
+<h3 id="连接阶段"><a href="#连接阶段" class="headerlink" title="连接阶段"></a>连接阶段</h3><p>连接又可以分为验证、准备、解析</p>
+<ul>
+<li><p>验证<br>验证阶段用于确保类的二进制表示结构上是正确的。</p>
 </li>
-<li><p>连接阶段<br>连接又可以分为验证、准备、解析</p>
+<li><p>准备<br>准备阶段的任务是为类的静态字段分配空间，采用默认值初始化这些字段。</p>
 </li>
-</ol>
-<p>2.1 验证<br>验证阶段用于确保类的二进制表示结构上是正确的。</p>
-<p>2.2 准备<br>准备阶段的任务是为类的静态字段分配空间，采用默认值初始化这些字段。</p>
-<p>2.3 解析<br>解析就是把代码中的符号引用替换为直接引用。例如某个类继承了java.lang.Object，原来的符号引用记录的是“java.lang.Object”，并不是java.lang.Object对象,直接引用就是找出对应的java.lang.Object对应的内存地址，建立直接引用关系。</p>
-<ol start="3">
-<li>初始化<br>初始化的过程包括执行类构造器方法，static变量赋值语句，static{}代码块，如果是一个子类进行初始化会先对其父类进行初始化，保证其父类在子类之前进行初始化。</li>
-</ol>
+<li><p>解析<br>解析就是把代码中的符号引用替换为直接引用。例如某个类继承了java.lang.Object，原来的符号引用记录的是“java.lang.Object”，并不是java.lang.Object对象,直接引用就是找出对应的java.lang.Object对应的内存地址，建立直接引用关系。</p>
+</li>
+</ul>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><p>初始化的过程包括执行类构造器方法，static变量赋值语句，static{}代码块，如果是一个子类进行初始化会先对其父类进行初始化，保证其父类在子类之前进行初始化。</p>
 <p>以下几种情况不会执行类初始化：</p>
 <ul>
 <li>通过子类引用父类的静态字段，只会触发父类的初始化，而不会触发子类的初始化。</li>
@@ -524,7 +525,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM内存模型"><span class="nav-number">1.</span> <span class="nav-text">JVM内存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PC寄存器"><span class="nav-number">1.1.</span> <span class="nav-text">PC寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java虚拟机栈"><span class="nav-number">1.2.</span> <span class="nav-text">Java虚拟机栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java堆"><span class="nav-number">1.3.</span> <span class="nav-text">Java堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法区"><span class="nav-number">1.4.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#本地方法栈"><span class="nav-number">1.5.</span> <span class="nav-text">本地方法栈</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-GC"><span class="nav-number">2.</span> <span class="nav-text">Java GC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM类加载"><span class="nav-number">3.</span> <span class="nav-text">JVM类加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类加载器"><span class="nav-number">4.</span> <span class="nav-text">类加载器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#加载器分类"><span class="nav-number">4.1.</span> <span class="nav-text">加载器分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双亲委派模式"><span class="nav-number">4.2.</span> <span class="nav-text">双亲委派模式</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM内存模型"><span class="nav-number">1.</span> <span class="nav-text">JVM内存模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PC寄存器"><span class="nav-number">1.1.</span> <span class="nav-text">PC寄存器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java虚拟机栈"><span class="nav-number">1.2.</span> <span class="nav-text">Java虚拟机栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java堆"><span class="nav-number">1.3.</span> <span class="nav-text">Java堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法区"><span class="nav-number">1.4.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#本地方法栈"><span class="nav-number">1.5.</span> <span class="nav-text">本地方法栈</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java-GC"><span class="nav-number">2.</span> <span class="nav-text">Java GC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM类加载"><span class="nav-number">3.</span> <span class="nav-text">JVM类加载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#加载阶段"><span class="nav-number">3.1.</span> <span class="nav-text">加载阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#连接阶段"><span class="nav-number">3.2.</span> <span class="nav-text">连接阶段</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">3.3.</span> <span class="nav-text">初始化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类加载器"><span class="nav-number">4.</span> <span class="nav-text">类加载器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#加载器分类"><span class="nav-number">4.1.</span> <span class="nav-text">加载器分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双亲委派模式"><span class="nav-number">4.2.</span> <span class="nav-text">双亲委派模式</span></a></li></ol></li></ol></div>
             
 
           </div>
