@@ -101,7 +101,7 @@
 <meta property="og:site_name" content="碎片笔记">
 <meta property="og:description" content="简介RecyclerView是Support V7包中的列表控件，它能比较方便的实现各种复杂的列表布局。RecyclerView高度解耦，通过设置不同的LayoutManager、ItemDecoration、ItemAnimator来实现不同的效果。这也是为什么去实现一个简单的列表，RecyclerView会比ListView代码量多的原因。ListView以及RecyclerView的特点就是">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-08-13T01:27:31.116Z">
+<meta property="og:updated_time" content="2018-08-16T03:31:26.175Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RecyclerView源码分析缓存机制">
 <meta name="twitter:description" content="简介RecyclerView是Support V7包中的列表控件，它能比较方便的实现各种复杂的列表布局。RecyclerView高度解耦，通过设置不同的LayoutManager、ItemDecoration、ItemAnimator来实现不同的效果。这也是为什么去实现一个简单的列表，RecyclerView会比ListView代码量多的原因。ListView以及RecyclerView的特点就是">
@@ -377,7 +377,7 @@
 </li>
 <li><p>从<code>mCachedViews</code>中通过<code>position</code>寻找</p>
 </li>
-<li><p>从<code>mViewCacheExtension</code>中通过<code>ViewType</code>寻找</p>
+<li><p>从<code>mViewCacheExtension</code>中通过<code>position</code>和<code>ViewType</code>寻找</p>
 </li>
 <li><p>从共享的<code>mRecycledPool</code>中通过<code>ViewType</code>寻找</p>
 </li>
