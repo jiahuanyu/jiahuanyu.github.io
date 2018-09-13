@@ -346,7 +346,7 @@
 <p>修改成<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">--<span class="built_in">disable</span>-shared \  </span><br><span class="line">--<span class="built_in">enable</span>-static \</span><br></pre></td></tr></table></figure></p>
 <p>这里不再去编译动态库了，而是去生成静态库，接着在原脚本最后加上链接成一个动态库的脚本<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$TOOLCHAIN</span>/bin/arm-linux-androideabi-ld \</span><br><span class="line">    -rpath-link=<span class="variable">$SYSROOT</span>/usr/lib \</span><br><span class="line">    -L<span class="variable">$SYSROOT</span>/usr/lib \</span><br><span class="line">    -L<span class="variable">$PREFIX</span>/lib \</span><br><span class="line">    -soname libffmpeg.so \</span><br><span class="line">    -shared -nostdlib \</span><br><span class="line">    -Bsymbolic \</span><br><span class="line">    --whole-archive --no-undefined \</span><br><span class="line">    -o <span class="variable">$PREFIX</span>/libffmpeg.so \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavcodec.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavfilter.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libswresample.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavformat.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavutil.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libswscale.a \</span><br><span class="line">    -lc -lm -lz -ldl -llog \</span><br><span class="line">    <span class="variable">$TOOLCHAIN</span>/lib/gcc/arm-linux-androideabi/4.9.x/libgcc.a</span><br></pre></td></tr></table></figure></p>
 <p>重新运行脚本之后，等待片刻，如图所示：<br><img src="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7xzxt711j30mi0hkjtr.jpg" alt=""></p>
-<h2 id="编译到可能遇到的问题"><a href="#编译到可能遇到的问题" class="headerlink" title="编译到可能遇到的问题"></a>编译到可能遇到的问题</h2><p>大部分都是跟NDK的版本有关</p>
+<h2 id="编译过程中可能遇到的问题"><a href="#编译过程中可能遇到的问题" class="headerlink" title="编译过程中可能遇到的问题"></a>编译过程中可能遇到的问题</h2><p>大部分都是跟NDK的版本有关</p>
 <ul>
 <li>头文件找不到，脚本中<code>-I$ASM -isysroot $ISYSROOT</code>指定头文件路径。</li>
 <li>最后一步链接的时候<code>undefined reference to &#39;stderr&#39;</code>，参考<code>References</code>中第三篇文章，也可以降级NDK。</li>
@@ -892,126 +892,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/06/29/CSS选择器/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JiaHuan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="碎片笔记">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/06/29/CSS选择器/" itemprop="url">CSS选择器</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-29T00:00:00+08:00">
-                2018-06-29
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fss4dwgd16j31kw33mkjl.jpg" alt=""></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/05/13/Android版本与API-SDK-Level对照/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1164,129 +1044,6 @@
 </tr>
 </tbody>
 </table>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/05/10/Git常用命令/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JiaHuan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="碎片笔记">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/10/Git常用命令/" itemprop="url">Git常用命令</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-10T00:00:00+08:00">
-                2018-05-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="修改远程仓库地址"><a href="#修改远程仓库地址" class="headerlink" title="修改远程仓库地址"></a>修改远程仓库地址</h2><p>格式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote set-url $&#123;远程仓库名&#125; $&#123;远程仓库地址&#125;</span><br></pre></td></tr></table></figure></p>
-<p>举例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git remote set-url origin git@github.com:jiahuanyu/Algorithm.git</span><br></pre></td></tr></table></figure></p>
-<h2 id="拉取远程仓库分支到本地分支"><a href="#拉取远程仓库分支到本地分支" class="headerlink" title="拉取远程仓库分支到本地分支"></a>拉取远程仓库分支到本地分支</h2><p>格式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b $&#123;本地分支名&#125; $&#123;远程仓库名&#125;/$&#123;远程仓库分支&#125;</span><br></pre></td></tr></table></figure></p>
-<p>举例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout -b dev origin/dev</span><br></pre></td></tr></table></figure></p>
 
           
         
@@ -1724,13 +1481,149 @@
 
 
     
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2016/04/03/仿网易新闻客户端分类排序/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JiaHuan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="碎片笔记">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2016/04/03/仿网易新闻客户端分类排序/" itemprop="url">仿网易新闻客户端分类排序</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-04-03T00:00:00+08:00">
+                2016-04-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="效果图"><a href="#效果图" class="headerlink" title="效果图"></a>效果图</h2><p>先来看看网易新闻客户端以及自己实现的效果图，效果当然还是网易的好<br><img src="http://upload-images.jianshu.io/upload_images/636361-8d572e9ad8efe169.gif?imageMogr2/auto-orient/strip" alt=""><br><img src="http://upload-images.jianshu.io/upload_images/636361-b562a11c78959ff1.gif?imageMogr2/auto-orient/strip" alt=""></p>
+<h2 id="如何实现拖拽一个Item"><a href="#如何实现拖拽一个Item" class="headerlink" title="如何实现拖拽一个Item"></a>如何实现拖拽一个Item</h2><p>用<code>WindowManager</code>添加一个<code>ImageView</code>，并且将这个<code>ImageView</code>的显示图片设置成被拖拽item的截图，截图可以通过<code>View</code>的<code>getDrawingCache</code>获得。拖拽的时候，隐藏原始的item。处理触摸事件的<code>ActionMove</code>，调整<code>ImageView</code>的位置，跟随手指移动。在<code>ActionUp</code>的时候<code>removeView</code></p>
+<p>GridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onItemLongClick</span><span class="params">(AdapterView&lt;?&gt; adapterView, View view, <span class="keyword">int</span> i, <span class="keyword">long</span> l)</span></span></span><br><span class="line"><span class="function">   </span>&#123;</span><br><span class="line">       <span class="comment">// 至少有两个item的时候，才有排序</span></span><br><span class="line">       <span class="keyword">if</span> (getChildCount() &gt;= <span class="number">2</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           mView = view;</span><br><span class="line">           <span class="comment">// 在调用getDrawingCache必须先调用</span></span><br><span class="line">           view.setDrawingCacheEnabled(<span class="keyword">true</span>);</span><br><span class="line">           <span class="comment">// 获取截图并设置</span></span><br><span class="line">           Bitmap bitmap = view.getDrawingCache();</span><br><span class="line">           mDragItemView.setImageBitmap(bitmap);</span><br><span class="line">           <span class="comment">// 设置拖拽的imageview的params</span></span><br><span class="line">           mDragItemLayoutParams.gravity = Gravity.TOP | Gravity.LEFT;</span><br><span class="line">           mDragItemLayoutParams.width = bitmap.getWidth();</span><br><span class="line">           mDragItemLayoutParams.height = bitmap.getHeight();</span><br><span class="line">           mDragItemLayoutParams.x = (mDownX - mDragItemLayoutParams.width / <span class="number">2</span>);</span><br><span class="line">           mDragItemLayoutParams.y = (mDownY - mDragItemLayoutParams.height / <span class="number">2</span>);</span><br><span class="line">           <span class="comment">// 设置拖拽imageview的中心位于长按点击点</span></span><br><span class="line">           mDragItemLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  <span class="comment">//不接受按键事件</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  <span class="comment">// 不接收触摸事件</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON   <span class="comment">// 保持常亮</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN; <span class="comment">// place the window within the entire screen, ignoring decorations around the border (such as the status bar)</span></span><br><span class="line">           mDragItemLayoutParams.format = PixelFormat.TRANSLUCENT;</span><br><span class="line">           mDragItemLayoutParams.windowAnimations = <span class="number">0</span>;</span><br><span class="line">           <span class="comment">// 往WindowManager中添加拖拽的View</span></span><br><span class="line">           mWindowManager.addView(mDragItemView, mDragItemLayoutParams);</span><br><span class="line"></span><br><span class="line">           ((GridViewSortAdapter) getAdapter()).init();</span><br><span class="line"></span><br><span class="line">           ((GridViewSortAdapter) getAdapter()).hideView(i);</span><br><span class="line"></span><br><span class="line">           Log.d(TAG, <span class="string">"long click = "</span> + i);</span><br><span class="line"></span><br><span class="line">           mDragStarted = <span class="keyword">true</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTouchEvent</span><span class="params">(MotionEvent ev)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">switch</span> (ev.getAction() &amp; ev.getActionMasked())</span><br><span class="line">   &#123;</span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_DOWN:</span><br><span class="line">           mDownX = (<span class="keyword">int</span>) ev.getRawX();</span><br><span class="line">           mDownY = (<span class="keyword">int</span>) ev.getRawY();</span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_MOVE:</span><br><span class="line">           <span class="keyword">if</span> (mDragStarted)</span><br><span class="line">           &#123;</span><br><span class="line">                <span class="comment">// 保持中心</span></span><br><span class="line">               mDragItemLayoutParams.x = (<span class="keyword">int</span>) (ev.getRawX() - mDragItemView.getWidth() / <span class="number">2</span>);</span><br><span class="line">               mDragItemLayoutParams.y = (<span class="keyword">int</span>) (ev.getRawY() - mDragItemView.getHeight() / <span class="number">2</span>);</span><br><span class="line">               <span class="comment">// 更新params</span></span><br><span class="line">               mWindowManager.updateViewLayout(mDragItemView, mDragItemLayoutParams);</span><br><span class="line">               <span class="comment">// ......</span></span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_UP:</span><br><span class="line">           <span class="comment">// ......</span></span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">super</span>.onTouchEvent(ev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="如何实现隐藏拖拽的Item"><a href="#如何实现隐藏拖拽的Item" class="headerlink" title="如何实现隐藏拖拽的Item"></a>如何实现隐藏拖拽的Item</h2><p>在开始拖拽的时候，把隐藏的item的<code>position</code>告诉<code>Adapter</code>，调用<code>Adapter</code>的<code>notifyDataSetChanged</code>刷新数据，在<code>getView</code>方法中判断当前的构建的item的<code>position</code>是不是需要隐藏的<code>position</code>是的话就设置<code>view</code>为<code>inVisible</code></p>
+<p>GridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onItemLongClick</span><span class="params">(AdapterView&lt;?&gt; adapterView, View view, <span class="keyword">int</span> i, <span class="keyword">long</span> l)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// ......</span></span><br><span class="line">    ((GridViewSortAdapter) getAdapter()).hideView(i);</span><br><span class="line">    <span class="comment">// ......</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>GridViewSortAdapter<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hideView</span><span class="params">(<span class="keyword">int</span> item)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// ......</span></span><br><span class="line">    mStartHideItemPosition = item;</span><br><span class="line">    notifyDataSetChanged();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> mStartHideItemPosition = AdapterView.INVALID_POSITION;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">getView</span><span class="params">(<span class="keyword">int</span> position, View convertView, ViewGroup parent)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ViewHolder holder = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (convertView == <span class="keyword">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        convertView = LayoutInflater.from(mContext).inflate(R.layout.view_item_grid_view_sort, <span class="keyword">null</span>);</span><br><span class="line">        holder = <span class="keyword">new</span> ViewHolder();</span><br><span class="line">        holder.title = (TextView) convertView.findViewById(R.id.view_item_grid_view_sort_title);</span><br><span class="line">        convertView.setTag(holder);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        holder = (ViewHolder) convertView.getTag();</span><br><span class="line">    &#125;</span><br><span class="line">    holder.title.setText(mTypeTitle.get(position));</span><br><span class="line">    <span class="keyword">if</span> (mStartHideItemPosition == position)</span><br><span class="line">    &#123;</span><br><span class="line">        convertView.setVisibility(View.INVISIBLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        convertView.setVisibility(View.VISIBLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> convertView;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="如何知道当前拖拽到哪一个item之上"><a href="#如何知道当前拖拽到哪一个item之上" class="headerlink" title="如何知道当前拖拽到哪一个item之上"></a>如何知道当前拖拽到哪一个item之上</h2><p>要想在拖拽到其他item上面时互换位置，那必须得知道当前拖拽到了哪一个item之上。<code>GrideView</code>提供了一个方法叫<code>pointToPosition</code>，可以在处理触摸事件的<code>ACTION_MOVE</code>时，获取手指触摸的x,y来得到当前拖拽到item之上的<code>position</code>。这里需要注意的一点是，在拖拽的过程，同一个item的<code>position</code>是不会变的，除非调用了<code>Adapter</code>的<code>notifyDataSetChanged</code>，<code>position</code>才会重新计算。比如<code>position</code>为2的item，在拖拽的过程无论怎么动画移动位置，他的<code>position</code>都是2，知道一次拖拽结束，<code>ActionUp</code>的时候，会调用<code>notifyDataSetChanged</code></p>
+<p>GridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTouchEvent</span><span class="params">(MotionEvent ev)</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line">    <span class="keyword">case</span> MotionEvent.ACTION_MOVE:</span><br><span class="line">    <span class="keyword">if</span> (mDragStarted)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// ......</span></span><br><span class="line">        <span class="keyword">int</span> position = pointToPosition((<span class="keyword">int</span>) ev.getX(), (<span class="keyword">int</span>) ev.getY());</span><br><span class="line">        <span class="comment">// ......</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="如何实现动画"><a href="#如何实现动画" class="headerlink" title="如何实现动画"></a>如何实现动画</h2><p>一个item需要水平以及垂直需要移动的距离可以事先先计算出来，其实水平距离不管怎么样一定会是<code>GridView</code>一个单元格的宽度加上水平间距，垂直距离无论如何都是一个单元格的高度加上垂直距离，宽度非常好取，高度的话，这里默认item 的高度和单元格的高度相同。</p>
+<p>GridViewSortAdapter<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">View view = mGridView.getChildAt(0);</span><br><span class="line">mTranslateX = view.getWidth() + mHorizontalSpace;</span><br><span class="line">mTranslateY = view.getHeight() + mVerticalSpace;</span><br></pre></td></tr></table></figure></p>
+<p>当拖拽到其他item之上时，开始动画</p>
+<p>SortGridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (position != AdapterView.INVALID_POSITION &amp;&amp; !((GridViewSortAdapter) getAdapter()).isInAnimation())</span><br><span class="line">&#123;    </span><br><span class="line">     Log.d(TAG, <span class="string">"position = "</span> + position);    </span><br><span class="line">     ((GridViewSortAdapter) getAdapter()).swap(position);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>GridSortAdapter<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span> position)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    mAnimatorSetList.clear();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> r_p = mPositionList.indexOf(position);</span><br><span class="line"></span><br><span class="line">    Log.d(TAG, <span class="string">"r_p = "</span> + r_p);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mCurrentHideItemPosition &lt; r_p)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = mCurrentHideItemPosition + <span class="number">1</span>; i &lt;= r_p; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            View v = mGridView.getChildAt(mPositionList.get(i));</span><br><span class="line">            <span class="keyword">if</span> (i % mColsNum == <span class="number">0</span> &amp;&amp; i &gt; <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                startMoveAnimation(v, v.getTranslationX() + mTranslateX * (mColsNum - <span class="number">1</span>), v.getTranslationY() -</span><br><span class="line">                        mTranslateY);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                startMoveAnimation(v, v.getTranslationX() - mTranslateX, <span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (mCurrentHideItemPosition &gt; r_p)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = r_p; i &lt; mCurrentHideItemPosition; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            View v = mGridView.getChildAt(mPositionList.get(i));</span><br><span class="line">            <span class="keyword">if</span> ((i + <span class="number">1</span>) % mColsNum == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                startMoveAnimation(v, v.getTranslationX() - mTranslateX * (mColsNum - <span class="number">1</span>), v.getTranslationY() + mTranslateY);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                startMoveAnimation(v, v.getTranslationX() + mTranslateX, <span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    resetPositionList();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> value = mPositionList.get(mStartHideItemPosition);</span><br><span class="line">    <span class="keyword">if</span> (mStartHideItemPosition &lt; r_p)</span><br><span class="line">    &#123;</span><br><span class="line">        mPositionList.add(r_p + <span class="number">1</span>, value);</span><br><span class="line">        mPositionList.remove(mStartHideItemPosition);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (mStartHideItemPosition &gt; r_p)</span><br><span class="line">    &#123;</span><br><span class="line">        mPositionList.add(r_p, value);</span><br><span class="line">        mPositionList.remove(mStartHideItemPosition + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mCurrentHideItemPosition = r_p;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isInAnimation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> mInAnimation;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">resetPositionList</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    mPositionList.clear();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mGridView.getChildCount(); i++)</span><br><span class="line">    &#123;</span><br><span class="line">        mPositionList.add(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startMoveAnimation</span><span class="params">(View myView, <span class="keyword">float</span> x, <span class="keyword">float</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    AnimatorSet set = <span class="keyword">new</span> AnimatorSet();</span><br><span class="line">    set.playTogether(</span><br><span class="line">            ObjectAnimator.ofFloat(myView, <span class="string">"translationX"</span>, myView.getTranslationX(), x),</span><br><span class="line">            ObjectAnimator.ofFloat(myView, <span class="string">"translationY"</span>, myView.getTranslationY(), y)</span><br><span class="line">    );</span><br><span class="line">    set.addListener(<span class="keyword">new</span> Animator.AnimatorListener()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationStart</span><span class="params">(Animator animator)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            mInAnimation = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationEnd</span><span class="params">(Animator animator)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            mInAnimation = <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationCancel</span><span class="params">(Animator animator)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationRepeat</span><span class="params">(Animator animator)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    mAnimatorSetList.add(set);</span><br><span class="line">    set.setDuration(<span class="number">150</span>).start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里我主要解释一下代码中 <code>mPositionList</code>这个列表的作用，之前说过一次拖拽的时候，item的<code>position</code>是不会变化的。</p>
+<p>假设有一组数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a b c d</span><br><span class="line">e f g h</span><br><span class="line">i j k l</span><br></pre></td></tr></table></figure></p>
+<p>此时mPositionList的内容就是 0 1 2 3 4 5 6 7 8 9 10 11 12<br>现在将<code>c</code>拖拽到<code>g</code>上，拖拽完成之后的数据应该是，未释放手指<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a b d e</span><br><span class="line">f g c h</span><br><span class="line">i j k l</span><br></pre></td></tr></table></figure></p>
+<p>此时mPositionList的内容就是 0 1 2 4 5 6 7 3 8 9 10 11 12<br>紧接着，继续拖拽<code>c</code>到<code>e</code>上，你会发现调用<code>pointToPosition</code>方法得到的position是5，但是<code>e</code>现在的索引是4<br>因此你只需要调用<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mPositionList.indexOf(pointToPosition(x,y))</span><br></pre></td></tr></table></figure></p>
+<p>就能得到真实的item的position</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>如果把GridView的列数变成1那么似曾相识啊<br><img src="http://upload-images.jianshu.io/upload_images/636361-3c978e1dbb98f7f4.gif?imageMogr2/auto-orient/strip" alt="gridviewex.gif"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
   </section>
 
   
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
-  </nav>
-
 
 
           </div>
@@ -1774,7 +1667,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>

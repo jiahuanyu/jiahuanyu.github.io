@@ -105,7 +105,7 @@
 <meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7uimaap0j30gq0acmyo.jpg">
 <meta property="og:image" content="https://ws4.sinaimg.cn/large/006tNbRwgy1fv7uc1mxtvj30s50hc40z.jpg">
 <meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7xzxt711j30mi0hkjtr.jpg">
-<meta property="og:updated_time" content="2018-09-13T07:29:10.000Z">
+<meta property="og:updated_time" content="2018-09-13T07:41:04.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MAC环境下源码编译Android平台FFMpeg">
 <meta name="twitter:description" content="FFMpeg FFmpeg是一个自由软件，可以运行音频和视频多种格式的录影、转换、流功能，包含了用于多个项目中音频和视频的解码器库libavcodec，以及音频与视频格式转换库libavformat。  指令集CPU执行任务时都需要遵从一定的规范，程序在被执行前都需要先翻译为CPU可以理解的语言，这种规范或语言就是指令集（ISA，Instruction Set Architecture）。常见的指">
@@ -349,7 +349,7 @@
 <p>修改成<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">--<span class="built_in">disable</span>-shared \  </span><br><span class="line">--<span class="built_in">enable</span>-static \</span><br></pre></td></tr></table></figure></p>
 <p>这里不再去编译动态库了，而是去生成静态库，接着在原脚本最后加上链接成一个动态库的脚本<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$TOOLCHAIN</span>/bin/arm-linux-androideabi-ld \</span><br><span class="line">    -rpath-link=<span class="variable">$SYSROOT</span>/usr/lib \</span><br><span class="line">    -L<span class="variable">$SYSROOT</span>/usr/lib \</span><br><span class="line">    -L<span class="variable">$PREFIX</span>/lib \</span><br><span class="line">    -soname libffmpeg.so \</span><br><span class="line">    -shared -nostdlib \</span><br><span class="line">    -Bsymbolic \</span><br><span class="line">    --whole-archive --no-undefined \</span><br><span class="line">    -o <span class="variable">$PREFIX</span>/libffmpeg.so \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavcodec.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavfilter.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libswresample.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavformat.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavutil.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libswscale.a \</span><br><span class="line">    -lc -lm -lz -ldl -llog \</span><br><span class="line">    <span class="variable">$TOOLCHAIN</span>/lib/gcc/arm-linux-androideabi/4.9.x/libgcc.a</span><br></pre></td></tr></table></figure></p>
 <p>重新运行脚本之后，等待片刻，如图所示：<br><img src="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7xzxt711j30mi0hkjtr.jpg" alt=""></p>
-<h2 id="编译到可能遇到的问题"><a href="#编译到可能遇到的问题" class="headerlink" title="编译到可能遇到的问题"></a>编译到可能遇到的问题</h2><p>大部分都是跟NDK的版本有关</p>
+<h2 id="编译过程中可能遇到的问题"><a href="#编译过程中可能遇到的问题" class="headerlink" title="编译过程中可能遇到的问题"></a>编译过程中可能遇到的问题</h2><p>大部分都是跟NDK的版本有关</p>
 <ul>
 <li>头文件找不到，脚本中<code>-I$ASM -isysroot $ISYSROOT</code>指定头文件路径。</li>
 <li>最后一步链接的时候<code>undefined reference to &#39;stderr&#39;</code>，参考<code>References</code>中第三篇文章，也可以降级NDK。</li>
@@ -465,7 +465,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -517,7 +517,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#FFMpeg"><span class="nav-number">1.</span> <span class="nav-text">FFMpeg</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#指令集"><span class="nav-number">2.</span> <span class="nav-text">指令集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交叉编译"><span class="nav-number">3.</span> <span class="nav-text">交叉编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NDK"><span class="nav-number">4.</span> <span class="nav-text">NDK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MAC下编译Android平台可用的FFMpeg链接库"><span class="nav-number">5.</span> <span class="nav-text">MAC下编译Android平台可用的FFMpeg链接库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将生成的多个库文件打包成一个动态链接库"><span class="nav-number">6.</span> <span class="nav-text">将生成的多个库文件打包成一个动态链接库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编译到可能遇到的问题"><span class="nav-number">7.</span> <span class="nav-text">编译到可能遇到的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number">8.</span> <span class="nav-text">References</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#FFMpeg"><span class="nav-number">1.</span> <span class="nav-text">FFMpeg</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#指令集"><span class="nav-number">2.</span> <span class="nav-text">指令集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交叉编译"><span class="nav-number">3.</span> <span class="nav-text">交叉编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NDK"><span class="nav-number">4.</span> <span class="nav-text">NDK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MAC下编译Android平台可用的FFMpeg链接库"><span class="nav-number">5.</span> <span class="nav-text">MAC下编译Android平台可用的FFMpeg链接库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将生成的多个库文件打包成一个动态链接库"><span class="nav-number">6.</span> <span class="nav-text">将生成的多个库文件打包成一个动态链接库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编译过程中可能遇到的问题"><span class="nav-number">7.</span> <span class="nav-text">编译过程中可能遇到的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number">8.</span> <span class="nav-text">References</span></a></li></ol></div>
             
 
           </div>
