@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.2" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="jiahuan, JIAHUAN, JiaHuan, android, Android, blog" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.2" />
+
+
+
+
+
+
+<meta name="description" content="FFMpeg FFmpeg是一个自由软件，可以运行音频和视频多种格式的录影、转换、流功能，包含了用于多个项目中音频和视频的解码器库libavcodec，以及音频与视频格式转换库libavformat。  指令集CPU执行任务时都需要遵从一定的规范，程序在被执行前都需要先翻译为CPU可以理解的语言，这种规范或语言就是指令集（ISA，Instruction Set Architecture）。常见的指">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MAC环境下源码编译Android平台FFMpeg">
+<meta property="og:url" content="http://blog.jiahuan.me/2018/09/13/MAC环境下源码编译Android平台FFMpeg/index.html">
+<meta property="og:site_name" content="碎片笔记">
+<meta property="og:description" content="FFMpeg FFmpeg是一个自由软件，可以运行音频和视频多种格式的录影、转换、流功能，包含了用于多个项目中音频和视频的解码器库libavcodec，以及音频与视频格式转换库libavformat。  指令集CPU执行任务时都需要遵从一定的规范，程序在被执行前都需要先翻译为CPU可以理解的语言，这种规范或语言就是指令集（ISA，Instruction Set Architecture）。常见的指">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7u7w5i8sj30qd0g2diw.jpg">
+<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7uimaap0j30gq0acmyo.jpg">
+<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tNbRwgy1fv7uc1mxtvj30s50hc40z.jpg">
+<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7xzxt711j30mi0hkjtr.jpg">
+<meta property="og:updated_time" content="2018-09-13T07:29:10.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MAC环境下源码编译Android平台FFMpeg">
+<meta name="twitter:description" content="FFMpeg FFmpeg是一个自由软件，可以运行音频和视频多种格式的录影、转换、流功能，包含了用于多个项目中音频和视频的解码器库libavcodec，以及音频与视频格式转换库libavformat。  指令集CPU执行任务时都需要遵从一定的规范，程序在被执行前都需要先翻译为CPU可以理解的语言，这种规范或语言就是指令集（ISA，Instruction Set Architecture）。常见的指">
+<meta name="twitter:image" content="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7u7w5i8sj30qd0g2diw.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://blog.jiahuan.me/2018/09/13/MAC环境下源码编译Android平台FFMpeg/"/>
+
+
+
+
+
+  <title>MAC环境下源码编译Android平台FFMpeg | 碎片笔记</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">碎片笔记</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/09/13/MAC环境下源码编译Android平台FFMpeg/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JiaHuan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="碎片笔记">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MAC环境下源码编译Android平台FFMpeg</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-13T00:00:00+08:00">
+                2018-09-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="FFMpeg"><a href="#FFMpeg" class="headerlink" title="FFMpeg"></a>FFMpeg</h2><blockquote>
+<p>FFmpeg是一个自由软件，可以运行音频和视频多种格式的录影、转换、流功能，包含了用于多个项目中音频和视频的解码器库libavcodec，以及音频与视频格式转换库libavformat。</p>
+</blockquote>
+<h2 id="指令集"><a href="#指令集" class="headerlink" title="指令集"></a>指令集</h2><p>CPU执行任务时都需要遵从一定的规范，程序在被执行前都需要先翻译为CPU可以理解的语言，这种规范或语言就是指令集（ISA，Instruction Set Architecture）。常见的指令集有<code>x86</code>、<code>x86_64</code>、<code>arm</code>、<code>mips</code>。</p>
+<h2 id="交叉编译"><a href="#交叉编译" class="headerlink" title="交叉编译"></a>交叉编译</h2><ul>
+<li><p>本地编译 <br><br>本地编译，意思就是在当前平台生成出当前平台的可执行的代码，只能在当前平台中执行。比如在x86平台上编译x86平台可执行的程序。</p>
+</li>
+<li><p>交叉编译 <br><br>交叉编译，意思就是在当前平台上生成另外一个平台的可执行代码，当前平台不可执行，目标平台可执行。比如在x86平台上编译出在arm平台上可执行的程序。</p>
+</li>
+<li><p>交叉编译工具链 <br><br>交叉编译工具链是为了跨平台编译而提供的一整套编译工，包含预处理、编译、链接、汇编等等。</p>
+</li>
+</ul>
+<h2 id="NDK"><a href="#NDK" class="headerlink" title="NDK"></a>NDK</h2><p><code>NDK</code>是Android提供的Native开发工具集，包括交叉编译工具链，可以快速开发C、C++动态库并打包进apk。在<code>SDK Manager</code>中可以非常方便下载<code>NDK</code>，如图所示：<br><img src="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7u7w5i8sj30qd0g2diw.jpg" alt=""><br>（这里插个讲解，上图中的CMake是AS2.2之后实行的编译Native代码的方式，LLDB是调试Native代码用的）下载的NDK可以在sdk目录下找到，如图所示：<br><img src="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7uimaap0j30gq0acmyo.jpg" alt=""></p>
+<h2 id="MAC下编译Android平台可用的FFMpeg链接库"><a href="#MAC下编译Android平台可用的FFMpeg链接库" class="headerlink" title="MAC下编译Android平台可用的FFMpeg链接库"></a>MAC下编译Android平台可用的FFMpeg链接库</h2><ul>
+<li><p>下载源代码，本文直接从github仓库拉下来的，版本是3.4<br><br><a href="http://www.ffmpeg.org/download.html" target="_blank" rel="noopener">FFMpeg官方网址</a><br><a href="https://github.com/FFmpeg/FFmpeg" target="_blank" rel="noopener">FFMpegGithub地址</a></p>
+</li>
+<li><p>编写编译shell脚本<br><br>在根目录下创建<code>build_android.sh</code>脚本文件，键入（路径确认改）</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译临时位置，先自己创建好</span></span><br><span class="line">TEMPDIR=/Users/abbott/WorkSpace/jiahuan/ffmpeg/temp</span><br><span class="line"></span><br><span class="line"><span class="comment"># NDK工具目录</span></span><br><span class="line">NDK=/Users/abbott/WorkSpace/Tools/Android/sdk/ndk-bundle</span><br><span class="line"></span><br><span class="line"><span class="comment"># 设置编译平台，一般是APK最低支持的版本</span></span><br><span class="line">SYSROOT=<span class="variable">$NDK</span>/platforms/android-21/arch-arm</span><br><span class="line"></span><br><span class="line"><span class="comment"># Include头文件位置 （这个跟NDK的版本有关，如果在编译的过程中发生头文件找不到的问题，记得这里，或者看参考里的第一篇文章）</span></span><br><span class="line">ISYSROOT=<span class="variable">$NDK</span>/sysroot</span><br><span class="line">ASM=<span class="variable">$ISYSROOT</span>/usr/include/arm-linux-androideabi</span><br><span class="line"></span><br><span class="line"><span class="comment"># 交叉编译工具链，如果不是在其他环境中编译可以选择相应的环境</span></span><br><span class="line">TOOLCHAIN=<span class="variable">$NDK</span>/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64</span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译后的文件输出</span></span><br><span class="line">CPU=armv7<span class="_">-a</span></span><br><span class="line">PREFIX=$(<span class="built_in">pwd</span>)/android/<span class="variable">$CPU</span></span><br><span class="line">ADDI_CFLAGS=<span class="string">"-marm -D__ANDROID_API__=21"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 配置有很多选项，这里不详细讲解</span></span><br><span class="line">./configure \</span><br><span class="line">    --<span class="built_in">enable</span>-cross-compile \</span><br><span class="line">    --<span class="built_in">enable</span>-shared \  </span><br><span class="line">    --<span class="built_in">disable</span>-static \</span><br><span class="line">    --<span class="built_in">disable</span>-doc \</span><br><span class="line">    --<span class="built_in">disable</span>-ffmpeg \</span><br><span class="line">    --<span class="built_in">disable</span>-ffplay \</span><br><span class="line">    --<span class="built_in">disable</span>-ffprobe \</span><br><span class="line">    --<span class="built_in">disable</span>-avdevice \</span><br><span class="line">    --<span class="built_in">disable</span>-symver \</span><br><span class="line">    --prefix=<span class="variable">$PREFIX</span> \</span><br><span class="line">    --cross-prefix=<span class="variable">$TOOLCHAIN</span>/bin/arm-linux-androideabi- \ <span class="comment"># 这里会找到目录下的gcc编译工具</span></span><br><span class="line">    --target-os=android \ </span><br><span class="line">    --arch=arm \</span><br><span class="line">    --sysroot=<span class="variable">$SYSROOT</span> \</span><br><span class="line">    --extra-cflags=<span class="string">"-I<span class="variable">$ASM</span> -isysroot <span class="variable">$ISYSROOT</span> -Os -fpic <span class="variable">$ADDI_CFLAGS</span>"</span></span><br><span class="line"></span><br><span class="line"><span class="variable">$ADDITIONAL_CONFIGURE_FLAG</span></span><br><span class="line"></span><br><span class="line">make -j4 <span class="comment">#这个可以指定编译线程数，加快编译 make -j4 </span></span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>以上脚本，其实就是非常经典的源码编译三部曲<code>configure</code>、<code>make</code>、<code>make install</code>。运行此脚本（记得改脚本权限+x），等待一定的时间后，可以在设定的输出文件夹中找到编译好的多个动态链接库文件，如图所示：<br><img src="https://ws4.sinaimg.cn/large/006tNbRwgy1fv7uc1mxtvj30s50hc40z.jpg" alt=""><br>其中，<code>include</code>文件夹是开发中需要包含的一些头文件，<code>share</code>文件夹里面是一些example。到这里就可以在java层加载动态链接库，jni层引入头文件做相关开发了。</p>
+<h2 id="将生成的多个库文件打包成一个动态链接库"><a href="#将生成的多个库文件打包成一个动态链接库" class="headerlink" title="将生成的多个库文件打包成一个动态链接库"></a>将生成的多个库文件打包成一个动态链接库</h2><p>原先打包出来的库有多个，在开发时觉得文件太多，很是不爽，而且生成的库的名字不能让开发者一眼就看出是哪一个三方库，所以想编译成一个文件，并且取个代表性的名字。首先修改脚本，将原先脚本<code>configure</code>里的<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">--<span class="built_in">enable</span>-shared \  </span><br><span class="line">--<span class="built_in">disable</span>-static \</span><br></pre></td></tr></table></figure></p>
+<p>修改成<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">--<span class="built_in">disable</span>-shared \  </span><br><span class="line">--<span class="built_in">enable</span>-static \</span><br></pre></td></tr></table></figure></p>
+<p>这里不再去编译动态库了，而是去生成静态库，接着在原脚本最后加上链接成一个动态库的脚本<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$TOOLCHAIN</span>/bin/arm-linux-androideabi-ld \</span><br><span class="line">    -rpath-link=<span class="variable">$SYSROOT</span>/usr/lib \</span><br><span class="line">    -L<span class="variable">$SYSROOT</span>/usr/lib \</span><br><span class="line">    -L<span class="variable">$PREFIX</span>/lib \</span><br><span class="line">    -soname libffmpeg.so \</span><br><span class="line">    -shared -nostdlib \</span><br><span class="line">    -Bsymbolic \</span><br><span class="line">    --whole-archive --no-undefined \</span><br><span class="line">    -o <span class="variable">$PREFIX</span>/libffmpeg.so \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavcodec.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavfilter.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libswresample.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavformat.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libavutil.a \</span><br><span class="line">    <span class="variable">$PREFIX</span>/lib/libswscale.a \</span><br><span class="line">    -lc -lm -lz -ldl -llog \</span><br><span class="line">    <span class="variable">$TOOLCHAIN</span>/lib/gcc/arm-linux-androideabi/4.9.x/libgcc.a</span><br></pre></td></tr></table></figure></p>
+<p>重新运行脚本之后，等待片刻，如图所示：<br><img src="https://ws3.sinaimg.cn/large/006tNbRwgy1fv7xzxt711j30mi0hkjtr.jpg" alt=""></p>
+<h2 id="编译到可能遇到的问题"><a href="#编译到可能遇到的问题" class="headerlink" title="编译到可能遇到的问题"></a>编译到可能遇到的问题</h2><p>大部分都是跟NDK的版本有关</p>
+<ul>
+<li>头文件找不到，脚本中<code>-I$ASM -isysroot $ISYSROOT</code>指定头文件路径。</li>
+<li>最后一步链接的时候<code>undefined reference to &#39;stderr&#39;</code>，参考<code>References</code>中第三篇文章，也可以降级NDK。</li>
+<li>其他问题，Google。</li>
+</ul>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p><a href="https://blog.csdn.net/luo0xue/article/details/80048847" target="_blank" rel="noopener">ffmpeg使用NDK编译时遇到的一些坑</a><a href="https://blog.csdn.net/wangshuainan/article/details/77856328" target="_blank" rel="noopener">编译Android平台使用的FFmpeg库</a><br><a href="https://android.googlesource.com/platform/ndk/+/ndk-r15-release/docs/UnifiedHeaders.md" target="_blank" rel="noopener">NDK Unified Headers</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/15/JVM类加载机制/" rel="next" title="JVM类加载机制">
+                <i class="fa fa-chevron-left"></i> JVM类加载机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpeg"
+               alt="JiaHuan" />
+          <p class="site-author-name" itemprop="name">JiaHuan</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives/">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/jiahuanyu" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                    
+                      GitHub
+                    
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#FFMpeg"><span class="nav-number">1.</span> <span class="nav-text">FFMpeg</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#指令集"><span class="nav-number">2.</span> <span class="nav-text">指令集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交叉编译"><span class="nav-number">3.</span> <span class="nav-text">交叉编译</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NDK"><span class="nav-number">4.</span> <span class="nav-text">NDK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MAC下编译Android平台可用的FFMpeg链接库"><span class="nav-number">5.</span> <span class="nav-text">MAC下编译Android平台可用的FFMpeg链接库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将生成的多个库文件打包成一个动态链接库"><span class="nav-number">6.</span> <span class="nav-text">将生成的多个库文件打包成一个动态链接库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编译到可能遇到的问题"><span class="nav-number">7.</span> <span class="nav-text">编译到可能遇到的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number">8.</span> <span class="nav-text">References</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JiaHuan</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.2"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.2"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
