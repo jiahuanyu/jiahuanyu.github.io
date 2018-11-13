@@ -250,6 +250,315 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/11/13/使用kotlin语言编写Android gradle脚本/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JiaHuan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="碎片笔记">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/11/13/使用kotlin语言编写Android gradle脚本/" itemprop="url">使用Kotlin语言编写Andriod Gradle脚本</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-13T00:00:00+08:00">
+                2018-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>当我们通过AS新建一个新的项目的时候，工程的结构目录如下图所示<br><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fw9w0di4xoj30ct0a6dgp.jpg" alt=""></p>
+<p>其中，以<code>gradle</code>结尾的文件（图中红框圈出），是我们在Android开发中经常需要修改的<code>gradle</code>脚本文件。通常<code>gradle</code>脚本是由<code>Groovy</code>语言编写的，例如：<br><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fw9w8zxyinj30si0gxn0b.jpg" alt=""></p>
+<p>这种写法称为<code>DSL</code>，指的是用于一个特定领域的语言。<code>Groovy</code>本身不是<code>DSL</code>语言，它是一种通用语言，但是因为<code>Groovy</code>的语言的特性对<code>DSL</code>提供了很好的支持，<code>Kotlin</code>语言也是如此。<code>Groovy</code>以及<code>Kotlin</code>语言有一个这样的特性：如果一个函数的最后的一个参数是一个<code>lamda</code>表达式，则可以写在<code>()</code>之外，如果这个函数只有一个参数并且就是<code>lamda</code>表达式，那么<code>()</code>也可以省略。因此，以上图中显示的脚本的<code>{}</code>就可以理解为一个函数。</p>
+<h2 id="根目录下的-build-gradle-gt-build-gradle-kts"><a href="#根目录下的-build-gradle-gt-build-gradle-kts" class="headerlink" title="根目录下的 build.gradle =&gt; build.gradle.kts"></a>根目录下的 build.gradle =&gt; build.gradle.kts</h2><p><code>Kotlin</code>编写<code>gradle</code>脚本需要将脚本文件的后缀添加<code>kts</code>（kotlin-script）。</p>
+<ul>
+<li><p><code>build.gradle</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath &apos;com.android.tools.build:gradle:3.2.1&apos;</span><br><span class="line">        // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">        // in the individual module build.gradle files</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">task clean(type: Delete) &#123;</span><br><span class="line">    delete rootProject.buildDir</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>build.gradle.kts</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath(&quot;com.android.tools.build:gradle:3.2.0&quot;)</span><br><span class="line">        // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">        // in the individual module build.gradle files</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="settings-gradle-gt-settings-gradle-kts"><a href="#settings-gradle-gt-settings-gradle-kts" class="headerlink" title="settings.gradle =&gt; settings.gradle.kts"></a>settings.gradle =&gt; settings.gradle.kts</h2><p>既然根目录的<code>gradle</code>脚本修改了名字，那么就要告知<code>gradle</code>编译工具寻找修改名字之后的文件，因此要在<code>settings.gradle.kts</code>文件中指定。</p>
+<ul>
+<li><code>setting.gradle</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">include &apos;:app&apos;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>-<code>setting.gradle.kts</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">include(&quot;app&quot;)</span><br><span class="line">rootProject.buildFileName = &quot;build.gradle.kts&quot;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Module中的-builde-gradle-gt-build-gradle-kts"><a href="#Module中的-builde-gradle-gt-build-gradle-kts" class="headerlink" title="Module中的 builde.gradle =&gt; build.gradle.kts"></a>Module中的 builde.gradle =&gt; build.gradle.kts</h2><p>- <code>build.grale</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.application&apos;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion 28</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId &quot;me.jiuahuan.gradle&quot;</span><br><span class="line">        minSdkVersion 18</span><br><span class="line">        targetSdkVersion 28</span><br><span class="line">        versionCode 1</span><br><span class="line">        versionName &quot;1.0.0&quot;</span><br><span class="line">        testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            minifyEnabled false</span><br><span class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation &apos;com.android.support:appcompat-v7:28.0.0&apos;</span><br><span class="line">    testImplementation &apos;junit:junit:4.12&apos;</span><br><span class="line">    androidTestImplementation &apos;com.android.support.test:runner:1.0.2&apos;</span><br><span class="line">    androidTestImplementation &apos;com.android.support.test.espresso:espresso-core:3.0.2&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>build.gradle.kts</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">plugins &#123;</span><br><span class="line">    id(&quot;com.android.application&quot;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion(28)</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId = &quot;me.jiahuan.gradle&quot;</span><br><span class="line">        minSdkVersion(18)</span><br><span class="line">        targetSdkVersion(28)</span><br><span class="line">        versionCode = 1</span><br><span class="line">        versionName = &quot;1.0.0&quot;</span><br><span class="line"></span><br><span class="line">        testInstrumentationRunner = &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        getByName(&quot;release&quot;) &#123;</span><br><span class="line">            isMinifyEnabled = false</span><br><span class="line">            proguardFiles(&quot;proguard-rules.pro&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation(&quot;com.android.support:appcompat-v7:28.0.0&quot;)</span><br><span class="line">    testImplementation(&quot;junit:junit:4.12&quot;)</span><br><span class="line">    androidTestImplementation(&quot;com.android.support.test:runner:1.0.2&quot;)</span><br><span class="line">    androidTestImplementation(&quot;com.android.support.test.espresso:espresso-core:3.0.2&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="统一第三方依赖版本管理"><a href="#统一第三方依赖版本管理" class="headerlink" title="统一第三方依赖版本管理"></a>统一第三方依赖版本管理</h2><p>通常在开发过程我们会统一规划第三方依赖库的版本或者统一编译版本，我们会在根目录的<code>build.gradle</code>中编写，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ext &#123;</span><br><span class="line">    config = [</span><br><span class="line">            compileSdkVersion: 27,  </span><br><span class="line">            minSdkVersion    : 19,</span><br><span class="line">            targetSdkVersion : 27,</span><br><span class="line">            versionCode      : 1,</span><br><span class="line">            versionName      : &quot;0.1.0&quot;,</span><br><span class="line">            supportVersion   : &quot;27.1.1&quot;  // support依赖库的版本</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后在module的<code>build.gradle</code>中可以这样编写<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">implementation &apos;com.android.support:appcompat-v7:&apos; + config.supportVersion</span><br><span class="line">implementation &apos;com.android.support:design:&apos; + config.supportVersion</span><br></pre></td></tr></table></figure></p>
+<p>但是在<code>Koltin</code>写法中并不是这样的，官方推荐的是新建一个叫<code>buildSrc</code>Module（这个也是实现gradle插件的方式之一），然后可以新建一个<code>Kotlin</code>配置文件来指定统一的版本号，如：</p>
+<p><img src="https://ws4.sinaimg.cn/large/006tNbRwly1fw9x1aoxraj30d00ec0tu.jpg" alt=""></p>
+<ul>
+<li><code>Config.kt</code><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> kotlinVersion = <span class="string">"1.2.21"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> androidGradleVersion = <span class="string">"3.0.1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Compile dependencies</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> supportVersion = <span class="string">"27.0.2"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> ankoVersion = <span class="string">"0.10.4"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> daggerVersion = <span class="string">"2.14.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> retrofitVersion = <span class="string">"2.3.0"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> okhttpVersion = <span class="string">"3.9.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> eventBusVersion = <span class="string">"2.4.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> picassoVersion = <span class="string">"2.5.2"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> priorityJobQueueVersion = <span class="string">"2.0.1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Unit tests</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> mockitoVersion = <span class="string">"2.13.0"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">object</span> Config &#123;</span><br><span class="line">    <span class="keyword">object</span> BuildPlugins &#123;</span><br><span class="line">        <span class="keyword">val</span> androidGradle = <span class="string">"com.android.tools.build:gradle:<span class="variable">$androidGradleVersion</span>"</span></span><br><span class="line">        <span class="keyword">val</span> kotlinGradlePlugin = <span class="string">"org.jetbrains.kotlin:kotlin-gradle-plugin:<span class="variable">$kotlinVersion</span>"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> Android &#123;</span><br><span class="line">        <span class="keyword">val</span> buildToolsVersion = <span class="string">"27.0.3"</span> </span><br><span class="line">        <span class="keyword">val</span> minSdkVersion = <span class="number">19</span></span><br><span class="line">        <span class="keyword">val</span> targetSdkVersion = <span class="number">27</span></span><br><span class="line">        <span class="keyword">val</span> compileSdkVersion = <span class="number">27</span></span><br><span class="line">        <span class="keyword">val</span> applicationId = <span class="string">"com.antonioleiva.bandhookkotlin"</span></span><br><span class="line">        <span class="keyword">val</span> versionCode = <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> versionName = <span class="string">"0.1"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> Libs &#123;</span><br><span class="line">        <span class="keyword">val</span> kotlin_std = <span class="string">"org.jetbrains.kotlin:kotlin-stdlib:<span class="variable">$kotlinVersion</span>"</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> TestLibs &#123;</span><br><span class="line">        <span class="keyword">val</span> junit = <span class="string">"junit:junit:4.12"</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>然后在需要的依赖的<code>build.gradle</code>脚本中这么写，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    implementation(Config.Libs.kotlin_std)</span><br><span class="line">    ...</span><br><span class="line">    androidTestImplementation(Config.TestLibs.mockito)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>关于<code>Kotlin DSL</code>写法的参考地址 <a href="https://github.com/gradle/kotlin-dsl" target="_blank" rel="noopener">https://github.com/gradle/kotlin-dsl</a><br></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/11/13/Android Jetpack 组件之 Lifecycle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JiaHuan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="碎片笔记">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/11/13/Android Jetpack 组件之 Lifecycle/" itemprop="url">Android Jetpack Components 之 Architecture Lifecycles</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-13T00:00:00+08:00">
+                2018-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>管理应用Activity以及Fragment的生命周期（Manage your activity and fragment lifecycles），组件位于<code>android.arch.lifecycle</code>包下。</p>
+<h3 id="Lifecycles-解决了什么的问题？"><a href="#Lifecycles-解决了什么的问题？" class="headerlink" title="Lifecycles 解决了什么的问题？"></a>Lifecycles 解决了什么的问题？</h3><p>通常在一个MVP架构的应用中，Presenter会或多或少的关注Activity或者Fragment的生命周期，如</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> : <span class="type">AppCompatActivity</span></span>() &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">lateinit</span> <span class="keyword">var</span> mPresenter: MainPresenter</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onCreate</span><span class="params">(savedInstanceState: <span class="type">Bundle</span>?)</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState)</span><br><span class="line">        setContentView(R.layout.activity_main)</span><br><span class="line">        mPresenter = MainPresenter()</span><br><span class="line">        mPresenter.onCreate()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onResume</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.onResume()</span><br><span class="line">        mPresenter.onResume()</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onPause</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.onPause()</span><br><span class="line">        mPresenter.onPause()</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onDestroy</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.onDestroy()</span><br><span class="line">        mPresenter.onDestroy()</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在实际生产环境中，代码会非常复杂，会导致生命周期方法非常臃肿。Lifecycles组件以观察者模式的设计实现对被观察者生命周期的感知，通过注解的方式注册对应的生命周期。一般这个组件会与其他jetpack组件一起组合使用，比如ViewModel，LiveData。</p>
+<h3 id="Lifecycles-使用"><a href="#Lifecycles-使用" class="headerlink" title="Lifecycles 使用"></a>Lifecycles 使用</h3><p>我们使用Lifecycles将上面的例子改造一下</p>
+<ul>
+<li>观察者<code>LifecyclerObserver</code></li>
+</ul>
+<p>当前例子中，观察者是Presenter，这里定义一个<code>IPresenter</code>接口，让所有的Presenter实现此接口。观察者需要实现<code>LifecycleObserver</code>接口，然后使用<code>@OnLifecycleEvent</code>注解的方式注册监听被观察者的生命周期。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">IPresenter</span> : <span class="type">LifecycleObserver &#123;</span></span></span><br><span class="line">    <span class="meta">@OnLifecycleEvent(Lifecycle.Event.ON_CREATE)</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">onCreate</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@OnLifecycleEvent(Lifecycle.Event.ON_START)</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">onStart</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@OnLifecycleEvent(Lifecycle.Event.ON_RESUME)</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">onResume</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">onPause</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@OnLifecycleEvent(Lifecycle.Event.ON_STOP)</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">onStop</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">onDestroy</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@OnLifecycleEvent(Lifecycle.Event.ON_ANY)</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">onLifecycleChange</span><span class="params">()</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">open</span> <span class="class"><span class="keyword">class</span> <span class="title">BasePresenter</span> : <span class="type">IPresenter &#123;</span></span></span><br><span class="line">    <span class="keyword">companion</span> <span class="keyword">object</span> &#123;</span><br><span class="line">        const <span class="keyword">val</span> TAG = <span class="string">"BasePresenter"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onResume</span><span class="params">()</span></span> &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"<span class="subst">$&#123;this.javaClass.name&#125;</span>  onResume"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onPause</span><span class="params">()</span></span> &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"<span class="subst">$&#123;this.javaClass.name&#125;</span>  onPause"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onStop</span><span class="params">()</span></span> &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"<span class="subst">$&#123;this.javaClass.name&#125;</span>  onStop"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onStart</span><span class="params">()</span></span> &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"<span class="subst">$&#123;this.javaClass.name&#125;</span>  onStart"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onCreate</span><span class="params">()</span></span> &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"<span class="subst">$&#123;this.javaClass.name&#125;</span>  onCreate"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onDestroy</span><span class="params">()</span></span> &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"<span class="subst">$&#123;this.javaClass.name&#125;</span>  onDestroy"</span>)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onLifecycleChange</span><span class="params">()</span></span> &#123;</span><br><span class="line">        Log.d(TAG, <span class="string">"<span class="subst">$&#123;this.javaClass.name&#125;</span>  onChange"</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>被观察者</li>
+</ul>
+<p>当前例子中，activity是被观察者，需要实现<code>LifecycleOwner</code>接口，接着维护一个<code>LifecycleRegistry</code>成员属性，在被观察者不同的生命周期函数中通过<code>LifecycleRegistry</code>成员属性通知生命周期的变化，调用<code>addObserver</code>方法添加观察者。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyActivity</span> : <span class="type">AppCompatActivity</span></span>(), LifecycleOwner &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">lateinit</span> <span class="keyword">var</span> mLifecycleRegistry: LifecycleRegistry</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">lateinit</span> <span class="keyword">var</span> mPresenter: MainPresenter</span><br><span class="line"></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onCreate</span><span class="params">(savedInstanceState: <span class="type">Bundle</span>?)</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState)</span><br><span class="line">			mPresenter = MainPresenter()</span><br><span class="line">        mLifecycleRegistry = LifecycleRegistry(<span class="keyword">this</span>)</span><br><span class="line">        mLifecycleRegistry.markState(Lifecycle.State.CREATED)</span><br><span class="line">        mLifecycleRegistry.addObserver(mPresenter)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onStart</span><span class="params">()</span></span> &#123;</span><br><span class="line">        <span class="keyword">super</span>.onStart()</span><br><span class="line">        mLifecycleRegistry.markState(Lifecycle.State.STARTED)</span><br><span class="line">        <span class="comment">// 或者</span></span><br><span class="line">        <span class="comment">// mLifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// LifecycleOwner需要重写的方法</span></span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">getLifecycle</span><span class="params">()</span></span>: Lifecycle &#123;</span><br><span class="line">        <span class="keyword">return</span> mLifecycleRegistry</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 其他生命周期方法</span></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果正在使用26.1.0及其之后版本的Support Library，<code>AppCompatActivity</code>已经实现<code>LifecycleOwner</code>接口，可以查看SupportActivity的源码，相关代码如下</p>
+<p><code>android.support.v4.app.SupportActivity</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SupportActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> <span class="keyword">implements</span> <span class="title">LifecycleOwner</span>, <span class="title">Component</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> LifecycleRegistry mLifecycleRegistry = <span class="keyword">new</span> LifecycleRegistry(<span class="keyword">this</span>);</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>MainActivity</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">class MainActivity : AppCompatActivity() &#123;</span><br><span class="line">    companion object &#123;</span><br><span class="line">        <span class="keyword">const</span> val TAG = <span class="string">"MainActivity"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> lateinit var mPresenter: MainPresenter</span><br><span class="line"></span><br><span class="line">    <span class="function">override fun <span class="title">onCreate</span><span class="params">(savedInstanceState: Bundle?)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState)</span><br><span class="line">        setContentView(R.layout.activity_main)</span><br><span class="line">        mPresenter = MainPresenter()</span><br><span class="line">        lifecycle.addObserver(mPresenter)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Lifecycle"><a href="#Lifecycle" class="headerlink" title="Lifecycle"></a>Lifecycle</h2><p><code>Lifecycle</code>是一个类，它包含关于组件生命周期状态（比如Activity，Fragment）的信息，并允许其他对象观察该状态。<br></p>
+<p><code>Lifecycle</code>使用两个枚举类来跟踪相关组件的生命周期状态。</p>
+<ul>
+<li>Event（源码位于Lifecycle类中）从<code>LifecycleOwner</code>对象中发出这些事件，由<code>LifecycleObserver</code></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> Event &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constant for onCreate event of the &#123;<span class="doctag">@link</span> LifecycleOwner&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ON_CREATE,</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constant for onStart event of the &#123;<span class="doctag">@link</span> LifecycleOwner&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ON_START,</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constant for onResume event of the &#123;<span class="doctag">@link</span> LifecycleOwner&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ON_RESUME,</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constant for onPause event of the &#123;<span class="doctag">@link</span> LifecycleOwner&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ON_PAUSE,</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constant for onStop event of the &#123;<span class="doctag">@link</span> LifecycleOwner&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ON_STOP,</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Constant for onDestroy event of the &#123;<span class="doctag">@link</span> LifecycleOwner&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ON_DESTROY,</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * An &#123;<span class="doctag">@link</span> Event Event&#125; constant that can be used to match all events.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    ON_ANY</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>State（源码位于Lifecycle类中）当前的组件的状态</li>
+</ul>
+<p><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fx0muuipvdj30j10afgnh.jpg" alt=""></p>
+<p>以上图可以看出某个Event对应的State</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> State &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Destroyed state for a LifecycleOwner. After this event, this Lifecycle will not dispatch</span></span><br><span class="line"><span class="comment">     * any more events. For instance, for an &#123;<span class="doctag">@link</span> android.app.Activity&#125;, this state is reached</span></span><br><span class="line"><span class="comment">     * &lt;b&gt;right before&lt;/b&gt; Activity's &#123;<span class="doctag">@link</span> android.app.Activity#onDestroy() onDestroy&#125; call.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    DESTROYED,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Initialized state for a LifecycleOwner. For an &#123;<span class="doctag">@link</span> android.app.Activity&#125;, this is</span></span><br><span class="line"><span class="comment">     * the state when it is constructed but has not received</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@link</span> android.app.Activity#onCreate(android.os.Bundle) onCreate&#125; yet.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    INITIALIZED,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Created state for a LifecycleOwner. For an &#123;<span class="doctag">@link</span> android.app.Activity&#125;, this state</span></span><br><span class="line"><span class="comment">     * is reached in two cases:</span></span><br><span class="line"><span class="comment">     * &lt;ul&gt;</span></span><br><span class="line"><span class="comment">     *     &lt;li&gt;after &#123;<span class="doctag">@link</span> android.app.Activity#onCreate(android.os.Bundle) onCreate&#125; call;</span></span><br><span class="line"><span class="comment">     *     &lt;li&gt;&lt;b&gt;right before&lt;/b&gt; &#123;<span class="doctag">@link</span> android.app.Activity#onStop() onStop&#125; call.</span></span><br><span class="line"><span class="comment">     * &lt;/ul&gt;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    CREATED,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Started state for a LifecycleOwner. For an &#123;<span class="doctag">@link</span> android.app.Activity&#125;, this state</span></span><br><span class="line"><span class="comment">     * is reached in two cases:</span></span><br><span class="line"><span class="comment">     * &lt;ul&gt;</span></span><br><span class="line"><span class="comment">     *     &lt;li&gt;after &#123;<span class="doctag">@link</span> android.app.Activity#onStart() onStart&#125; call;</span></span><br><span class="line"><span class="comment">     *     &lt;li&gt;&lt;b&gt;right before&lt;/b&gt; &#123;<span class="doctag">@link</span> android.app.Activity#onPause() onPause&#125; call.</span></span><br><span class="line"><span class="comment">     * &lt;/ul&gt;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    STARTED,</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Resumed state for a LifecycleOwner. For an &#123;<span class="doctag">@link</span> android.app.Activity&#125;, this state</span></span><br><span class="line"><span class="comment">     * is reached after &#123;<span class="doctag">@link</span> android.app.Activity#onResume() onResume&#125; is called.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    RESUMED;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Compares if this State is greater or equal to the given &#123;<span class="doctag">@code</span> state&#125;.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> state State to compare with</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> true if this State is greater or equal to the given &#123;<span class="doctag">@code</span> state&#125;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isAtLeast</span><span class="params">(@NonNull State state)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> compareTo(state) &gt;= <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里关于<code>State</code>的<code>isAtLeast</code>方法用法举个例子，通常Presenter会持有View对象，在一定的时候调用View提供的回调方法来做相应的操作，假设这里有个需求，由一个弹框提示至少在当前Activity Resume的时候才弹出来。观察State那张图，当Activity属于Resume状态时，State为RESUMED。</p>
+<figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> : <span class="type">AppCompatActivity</span></span>(), MainViewer &#123;</span><br><span class="line">	...</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">override</span> <span class="function"><span class="keyword">fun</span> <span class="title">onShowTip</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) &#123;</span><br><span class="line">				AlertDialog ....	</span><br><span class="line">    	&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="LifecycleOwner"><a href="#LifecycleOwner" class="headerlink" title="LifecycleOwner"></a>LifecycleOwner</h2><p><code>LifecycleOwner</code>是一个接口，它仅有一个方法<code>getLifecycle</code>，必须由子类实现，任何类都可以实现此接口，构建此类的生命周期感知。实现<code>LifecycleObserver</code>的类和实现<code>LifecyclerOwner</code>的类就组合成了经典的观察者和被观察者，任何被观察者都可以提供一个生命周期让观察者注册观察。</p>
+<h2 id="Lifecycles-UML"><a href="#Lifecycles-UML" class="headerlink" title="Lifecycles UML"></a>Lifecycles UML</h2><p><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fx0ohqf7ipj30v60grdhp.jpg" alt=""></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://developer.android.google.cn/topic/libraries/architecture/lifecycle" target="_blank" rel="noopener">Lifecycles组件官方地址</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/09/13/MAC环境下源码编译Android平台FFMpeg/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1453,149 +1762,13 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2016/04/03/仿网易新闻客户端分类排序/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JiaHuan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="碎片笔记">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/04/03/仿网易新闻客户端分类排序/" itemprop="url">仿网易新闻客户端分类排序</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-04-03T00:00:00+08:00">
-                2016-04-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="效果图"><a href="#效果图" class="headerlink" title="效果图"></a>效果图</h2><p>先来看看网易新闻客户端以及自己实现的效果图，效果当然还是网易的好<br><img src="http://upload-images.jianshu.io/upload_images/636361-8d572e9ad8efe169.gif?imageMogr2/auto-orient/strip" alt=""><br><img src="http://upload-images.jianshu.io/upload_images/636361-b562a11c78959ff1.gif?imageMogr2/auto-orient/strip" alt=""></p>
-<h2 id="如何实现拖拽一个Item"><a href="#如何实现拖拽一个Item" class="headerlink" title="如何实现拖拽一个Item"></a>如何实现拖拽一个Item</h2><p>用<code>WindowManager</code>添加一个<code>ImageView</code>，并且将这个<code>ImageView</code>的显示图片设置成被拖拽item的截图，截图可以通过<code>View</code>的<code>getDrawingCache</code>获得。拖拽的时候，隐藏原始的item。处理触摸事件的<code>ActionMove</code>，调整<code>ImageView</code>的位置，跟随手指移动。在<code>ActionUp</code>的时候<code>removeView</code></p>
-<p>GridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onItemLongClick</span><span class="params">(AdapterView&lt;?&gt; adapterView, View view, <span class="keyword">int</span> i, <span class="keyword">long</span> l)</span></span></span><br><span class="line"><span class="function">   </span>&#123;</span><br><span class="line">       <span class="comment">// 至少有两个item的时候，才有排序</span></span><br><span class="line">       <span class="keyword">if</span> (getChildCount() &gt;= <span class="number">2</span>)</span><br><span class="line">       &#123;</span><br><span class="line">           mView = view;</span><br><span class="line">           <span class="comment">// 在调用getDrawingCache必须先调用</span></span><br><span class="line">           view.setDrawingCacheEnabled(<span class="keyword">true</span>);</span><br><span class="line">           <span class="comment">// 获取截图并设置</span></span><br><span class="line">           Bitmap bitmap = view.getDrawingCache();</span><br><span class="line">           mDragItemView.setImageBitmap(bitmap);</span><br><span class="line">           <span class="comment">// 设置拖拽的imageview的params</span></span><br><span class="line">           mDragItemLayoutParams.gravity = Gravity.TOP | Gravity.LEFT;</span><br><span class="line">           mDragItemLayoutParams.width = bitmap.getWidth();</span><br><span class="line">           mDragItemLayoutParams.height = bitmap.getHeight();</span><br><span class="line">           mDragItemLayoutParams.x = (mDownX - mDragItemLayoutParams.width / <span class="number">2</span>);</span><br><span class="line">           mDragItemLayoutParams.y = (mDownY - mDragItemLayoutParams.height / <span class="number">2</span>);</span><br><span class="line">           <span class="comment">// 设置拖拽imageview的中心位于长按点击点</span></span><br><span class="line">           mDragItemLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE  <span class="comment">//不接受按键事件</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE  <span class="comment">// 不接收触摸事件</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON   <span class="comment">// 保持常亮</span></span><br><span class="line">                   | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN; <span class="comment">// place the window within the entire screen, ignoring decorations around the border (such as the status bar)</span></span><br><span class="line">           mDragItemLayoutParams.format = PixelFormat.TRANSLUCENT;</span><br><span class="line">           mDragItemLayoutParams.windowAnimations = <span class="number">0</span>;</span><br><span class="line">           <span class="comment">// 往WindowManager中添加拖拽的View</span></span><br><span class="line">           mWindowManager.addView(mDragItemView, mDragItemLayoutParams);</span><br><span class="line"></span><br><span class="line">           ((GridViewSortAdapter) getAdapter()).init();</span><br><span class="line"></span><br><span class="line">           ((GridViewSortAdapter) getAdapter()).hideView(i);</span><br><span class="line"></span><br><span class="line">           Log.d(TAG, <span class="string">"long click = "</span> + i);</span><br><span class="line"></span><br><span class="line">           mDragStarted = <span class="keyword">true</span>;</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTouchEvent</span><span class="params">(MotionEvent ev)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="keyword">switch</span> (ev.getAction() &amp; ev.getActionMasked())</span><br><span class="line">   &#123;</span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_DOWN:</span><br><span class="line">           mDownX = (<span class="keyword">int</span>) ev.getRawX();</span><br><span class="line">           mDownY = (<span class="keyword">int</span>) ev.getRawY();</span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_MOVE:</span><br><span class="line">           <span class="keyword">if</span> (mDragStarted)</span><br><span class="line">           &#123;</span><br><span class="line">                <span class="comment">// 保持中心</span></span><br><span class="line">               mDragItemLayoutParams.x = (<span class="keyword">int</span>) (ev.getRawX() - mDragItemView.getWidth() / <span class="number">2</span>);</span><br><span class="line">               mDragItemLayoutParams.y = (<span class="keyword">int</span>) (ev.getRawY() - mDragItemView.getHeight() / <span class="number">2</span>);</span><br><span class="line">               <span class="comment">// 更新params</span></span><br><span class="line">               mWindowManager.updateViewLayout(mDragItemView, mDragItemLayoutParams);</span><br><span class="line">               <span class="comment">// ......</span></span><br><span class="line">           &#125;</span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">case</span> MotionEvent.ACTION_UP:</span><br><span class="line">           <span class="comment">// ......</span></span><br><span class="line">           <span class="keyword">break</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">super</span>.onTouchEvent(ev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="如何实现隐藏拖拽的Item"><a href="#如何实现隐藏拖拽的Item" class="headerlink" title="如何实现隐藏拖拽的Item"></a>如何实现隐藏拖拽的Item</h2><p>在开始拖拽的时候，把隐藏的item的<code>position</code>告诉<code>Adapter</code>，调用<code>Adapter</code>的<code>notifyDataSetChanged</code>刷新数据，在<code>getView</code>方法中判断当前的构建的item的<code>position</code>是不是需要隐藏的<code>position</code>是的话就设置<code>view</code>为<code>inVisible</code></p>
-<p>GridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onItemLongClick</span><span class="params">(AdapterView&lt;?&gt; adapterView, View view, <span class="keyword">int</span> i, <span class="keyword">long</span> l)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// ......</span></span><br><span class="line">    ((GridViewSortAdapter) getAdapter()).hideView(i);</span><br><span class="line">    <span class="comment">// ......</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>GridViewSortAdapter<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hideView</span><span class="params">(<span class="keyword">int</span> item)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// ......</span></span><br><span class="line">    mStartHideItemPosition = item;</span><br><span class="line">    notifyDataSetChanged();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> mStartHideItemPosition = AdapterView.INVALID_POSITION;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">getView</span><span class="params">(<span class="keyword">int</span> position, View convertView, ViewGroup parent)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ViewHolder holder = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">if</span> (convertView == <span class="keyword">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        convertView = LayoutInflater.from(mContext).inflate(R.layout.view_item_grid_view_sort, <span class="keyword">null</span>);</span><br><span class="line">        holder = <span class="keyword">new</span> ViewHolder();</span><br><span class="line">        holder.title = (TextView) convertView.findViewById(R.id.view_item_grid_view_sort_title);</span><br><span class="line">        convertView.setTag(holder);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        holder = (ViewHolder) convertView.getTag();</span><br><span class="line">    &#125;</span><br><span class="line">    holder.title.setText(mTypeTitle.get(position));</span><br><span class="line">    <span class="keyword">if</span> (mStartHideItemPosition == position)</span><br><span class="line">    &#123;</span><br><span class="line">        convertView.setVisibility(View.INVISIBLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        convertView.setVisibility(View.VISIBLE);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> convertView;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="如何知道当前拖拽到哪一个item之上"><a href="#如何知道当前拖拽到哪一个item之上" class="headerlink" title="如何知道当前拖拽到哪一个item之上"></a>如何知道当前拖拽到哪一个item之上</h2><p>要想在拖拽到其他item上面时互换位置，那必须得知道当前拖拽到了哪一个item之上。<code>GrideView</code>提供了一个方法叫<code>pointToPosition</code>，可以在处理触摸事件的<code>ACTION_MOVE</code>时，获取手指触摸的x,y来得到当前拖拽到item之上的<code>position</code>。这里需要注意的一点是，在拖拽的过程，同一个item的<code>position</code>是不会变的，除非调用了<code>Adapter</code>的<code>notifyDataSetChanged</code>，<code>position</code>才会重新计算。比如<code>position</code>为2的item，在拖拽的过程无论怎么动画移动位置，他的<code>position</code>都是2，知道一次拖拽结束，<code>ActionUp</code>的时候，会调用<code>notifyDataSetChanged</code></p>
-<p>GridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">onTouchEvent</span><span class="params">(MotionEvent ev)</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line">    <span class="keyword">case</span> MotionEvent.ACTION_MOVE:</span><br><span class="line">    <span class="keyword">if</span> (mDragStarted)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// ......</span></span><br><span class="line">        <span class="keyword">int</span> position = pointToPosition((<span class="keyword">int</span>) ev.getX(), (<span class="keyword">int</span>) ev.getY());</span><br><span class="line">        <span class="comment">// ......</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="如何实现动画"><a href="#如何实现动画" class="headerlink" title="如何实现动画"></a>如何实现动画</h2><p>一个item需要水平以及垂直需要移动的距离可以事先先计算出来，其实水平距离不管怎么样一定会是<code>GridView</code>一个单元格的宽度加上水平间距，垂直距离无论如何都是一个单元格的高度加上垂直距离，宽度非常好取，高度的话，这里默认item 的高度和单元格的高度相同。</p>
-<p>GridViewSortAdapter<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">View view = mGridView.getChildAt(0);</span><br><span class="line">mTranslateX = view.getWidth() + mHorizontalSpace;</span><br><span class="line">mTranslateY = view.getHeight() + mVerticalSpace;</span><br></pre></td></tr></table></figure></p>
-<p>当拖拽到其他item之上时，开始动画</p>
-<p>SortGridView<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (position != AdapterView.INVALID_POSITION &amp;&amp; !((GridViewSortAdapter) getAdapter()).isInAnimation())</span><br><span class="line">&#123;    </span><br><span class="line">     Log.d(TAG, <span class="string">"position = "</span> + position);    </span><br><span class="line">     ((GridViewSortAdapter) getAdapter()).swap(position);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>GridSortAdapter<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">int</span> position)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    mAnimatorSetList.clear();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> r_p = mPositionList.indexOf(position);</span><br><span class="line"></span><br><span class="line">    Log.d(TAG, <span class="string">"r_p = "</span> + r_p);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (mCurrentHideItemPosition &lt; r_p)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = mCurrentHideItemPosition + <span class="number">1</span>; i &lt;= r_p; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            View v = mGridView.getChildAt(mPositionList.get(i));</span><br><span class="line">            <span class="keyword">if</span> (i % mColsNum == <span class="number">0</span> &amp;&amp; i &gt; <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                startMoveAnimation(v, v.getTranslationX() + mTranslateX * (mColsNum - <span class="number">1</span>), v.getTranslationY() -</span><br><span class="line">                        mTranslateY);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                startMoveAnimation(v, v.getTranslationX() - mTranslateX, <span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (mCurrentHideItemPosition &gt; r_p)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = r_p; i &lt; mCurrentHideItemPosition; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            View v = mGridView.getChildAt(mPositionList.get(i));</span><br><span class="line">            <span class="keyword">if</span> ((i + <span class="number">1</span>) % mColsNum == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                startMoveAnimation(v, v.getTranslationX() - mTranslateX * (mColsNum - <span class="number">1</span>), v.getTranslationY() + mTranslateY);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">            &#123;</span><br><span class="line">                startMoveAnimation(v, v.getTranslationX() + mTranslateX, <span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    resetPositionList();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> value = mPositionList.get(mStartHideItemPosition);</span><br><span class="line">    <span class="keyword">if</span> (mStartHideItemPosition &lt; r_p)</span><br><span class="line">    &#123;</span><br><span class="line">        mPositionList.add(r_p + <span class="number">1</span>, value);</span><br><span class="line">        mPositionList.remove(mStartHideItemPosition);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (mStartHideItemPosition &gt; r_p)</span><br><span class="line">    &#123;</span><br><span class="line">        mPositionList.add(r_p, value);</span><br><span class="line">        mPositionList.remove(mStartHideItemPosition + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    mCurrentHideItemPosition = r_p;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isInAnimation</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> mInAnimation;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">resetPositionList</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    mPositionList.clear();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; mGridView.getChildCount(); i++)</span><br><span class="line">    &#123;</span><br><span class="line">        mPositionList.add(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">startMoveAnimation</span><span class="params">(View myView, <span class="keyword">float</span> x, <span class="keyword">float</span> y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    AnimatorSet set = <span class="keyword">new</span> AnimatorSet();</span><br><span class="line">    set.playTogether(</span><br><span class="line">            ObjectAnimator.ofFloat(myView, <span class="string">"translationX"</span>, myView.getTranslationX(), x),</span><br><span class="line">            ObjectAnimator.ofFloat(myView, <span class="string">"translationY"</span>, myView.getTranslationY(), y)</span><br><span class="line">    );</span><br><span class="line">    set.addListener(<span class="keyword">new</span> Animator.AnimatorListener()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationStart</span><span class="params">(Animator animator)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            mInAnimation = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationEnd</span><span class="params">(Animator animator)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line">            mInAnimation = <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationCancel</span><span class="params">(Animator animator)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationRepeat</span><span class="params">(Animator animator)</span></span></span><br><span class="line"><span class="function">        </span>&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    mAnimatorSetList.add(set);</span><br><span class="line">    set.setDuration(<span class="number">150</span>).start();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这里我主要解释一下代码中 <code>mPositionList</code>这个列表的作用，之前说过一次拖拽的时候，item的<code>position</code>是不会变化的。</p>
-<p>假设有一组数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a b c d</span><br><span class="line">e f g h</span><br><span class="line">i j k l</span><br></pre></td></tr></table></figure></p>
-<p>此时mPositionList的内容就是 0 1 2 3 4 5 6 7 8 9 10 11 12<br>现在将<code>c</code>拖拽到<code>g</code>上，拖拽完成之后的数据应该是，未释放手指<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a b d e</span><br><span class="line">f g c h</span><br><span class="line">i j k l</span><br></pre></td></tr></table></figure></p>
-<p>此时mPositionList的内容就是 0 1 2 4 5 6 7 3 8 9 10 11 12<br>紧接着，继续拖拽<code>c</code>到<code>e</code>上，你会发现调用<code>pointToPosition</code>方法得到的position是5，但是<code>e</code>现在的索引是4<br>因此你只需要调用<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mPositionList.indexOf(pointToPosition(x,y))</span><br></pre></td></tr></table></figure></p>
-<p>就能得到真实的item的position</p>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>如果把GridView的列数变成1那么似曾相识啊<br><img src="http://upload-images.jianshu.io/upload_images/636361-3c978e1dbb98f7f4.gif?imageMogr2/auto-orient/strip" alt="gridviewex.gif"></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
 
 
           </div>
@@ -1639,7 +1812,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">9</span>
+                <span class="site-state-item-count">11</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
