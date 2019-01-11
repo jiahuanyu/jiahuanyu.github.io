@@ -250,6 +250,344 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2019/01/11/Android编译期修改Class字节码/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JiaHuan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="碎片笔记">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/01/11/Android编译期修改Class字节码/" itemprop="url">Android编译期修改Class字节码</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-11T00:00:00+08:00">
+                2019-01-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Android-打包过程"><a href="#Android-打包过程" class="headerlink" title="Android 打包过程"></a>Android 打包过程</h2><p>先放一张官网的图和描述<br><img src="https://ws1.sinaimg.cn/large/006tNc79ly1fz1hfbhydcj30qe0togoo.jpg" alt=""></p>
+<ol>
+<li>编译器将源代码转换成DEX文件，将所有其他内容转换成编译资源。</li>
+<li>APK打包器将DEX文件和已编译资源合并成单个APK。</li>
+<li>APK打包器使用DEBUG或者RELEASE的签名文件签署APK。</li>
+<li>在生成最终APK之前，打包器会使用zipalign工具对APK进行优化，减少设备运行时的内存占用。</li>
+</ol>
+<p>再放一张较为详细的图和描述<br><img src="https://ws1.sinaimg.cn/large/006tNc79ly1fz1hjixqlpj30ew0oiwg0.jpg" alt=""></p>
+<ol>
+<li>通过AAPT打包resource资源文件，编译成R.java、resource.arsc等资源相关文件。</li>
+<li>通过aidl工具处理源码中的.aidl文件，生成对用的java文件。</li>
+<li>通过Java Compiler（javac）工具编译.java文件生成.class文件。</li>
+<li>通过dx工具，将第三方jar、.class文件以及上一步生成的.class文件以及R.class文件打包成dex文件（Android可执行文件）。</li>
+<li>通过apkbuilder工具将dex以及第一步的资源文件打包成apk。</li>
+<li>通过apksigner工具，使用DEBUG或者RELEASE签名文件，签署apk文件。</li>
+<li>通过zipalign工具，对其优化apk。</li>
+</ol>
+<p>再放一张更为详细的图和描述<br><img src="https://ws3.sinaimg.cn/large/006tNc79ly1fz1hrq05isj30rl0u3n2q.jpg" alt=""></p>
+<p>从上面的这些图来看，如果想要在编译期修改.class文件就必须需要在dx工具将.class文件打包成dex文件之前去修改才行，我们发现最详细的那张图中，在生成dex文件之前，经过了proguard混淆加密的过程，它就是一个修改.class文件的过程，我们可以参考produard是如何实现的。</p>
+<h2 id="Gradle插件"><a href="#Gradle插件" class="headerlink" title="Gradle插件"></a>Gradle插件</h2><p>Proguard是通过Transfrom Api实现的，而Transform是依附于Gradle插件之上的，所以先介绍自定义Gradle插件。AndroidStudio中实现自定义Gradle插件有三种方式，一种是.gradle脚本文件，一种buildSrc模块，最后一种是独立工程。实现插件可以选择使用groovy、java以及kotlin语言。Groovy语言ide高亮支持的不是很好，没有引入的类库不会标红，难受，所以我写插件一般选择java或者kotlin。</p>
+<h3 id="gradle脚本"><a href="#gradle脚本" class="headerlink" title=".gradle脚本"></a>.gradle脚本</h3><p>gradle文件，构建脚本内，不过这种只能在文件内使用。</p>
+<h3 id="单独Module的插件"><a href="#单独Module的插件" class="headerlink" title="单独Module的插件"></a>单独Module的插件</h3><p>可以随意一个工程去引用，前提是需要发布到本地仓库或者maven私服。</p>
+<h3 id="buildSrc"><a href="#buildSrc" class="headerlink" title="buildSrc"></a>buildSrc</h3><p>可以在自己的工程内随意使用，但是其他工程就无法使用。这种模式和单独Module的插件的唯一区别就是单独Module插件需要上传，工程中无法直接引用。单独Module的插件中的build.gradle文件需要有上传的脚本代码。这里看一下buildSrc形式插件的具体结构目录：<br><img src="https://ws3.sinaimg.cn/large/006tNc79ly1fz1k4gja3fj30aj0ant95.jpg" alt=""></p>
+<ul>
+<li>build.gradle<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;java&apos; // groovy: apply plugin: &apos;groovy&apos;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation gradleApi() // gradle sdk</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">repositories &#123;</span><br><span class="line">    google()</span><br><span class="line">    jcenter()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>如果是单独module插件形式就多了上传的代码。</p>
+<ul>
+<li><p>TestEntryPlugin.java<br>插件的入口文件。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestEntryPlugin</span> <span class="keyword">implements</span> <span class="title">Plugin</span>&lt;<span class="title">Project</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">apply</span><span class="params">(Project project)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"custom plugin"</span>); <span class="comment">// 打印</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>resources下的.properties<br>指明插件的入口文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">implementation-class=me.jiahuan.plugin.TestEntryPlugin</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>以上就是最基本的插件的实现，实现完成之后就需要应用当前插件，只需要在app module的build.gradle中添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;me.jiahuan.plugin&apos;</span><br><span class="line">``` </span><br><span class="line">添加完成后，当点击sync project with grale files按钮就可在build panel中看到代码中的打印信息：</span><br><span class="line">![](https://ws4.sinaimg.cn/large/006tNc79ly1fz1mtij6uhj30gg07kjsl.jpg)</span><br><span class="line"></span><br><span class="line">简单说一下Gradle Project的概念，在Gradle中一个build.gradle就代表一个project。可以通过org.gradle.api.Project对象的Project.getExtensions().create(name,class)方法获取build.gradle中写的DSL。</span><br><span class="line"></span><br><span class="line">Gradle插件在Android开发中担负中比较重要的角色，最熟悉的插件就是`com.android.application`，这是开发Android的基础。像一些比较成熟的第三方框架，也会开会插件去让开发者更方便的接入，也有一些组件化的方案会通过插件去解耦等等。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">## Gradle Transform Api</span><br><span class="line">Transform Api是Android Gradle Plugin 1.5版本 之后引入的概念。第三方可以构建Gradle插件来使用Transform Api去修改编译之后的.class文件。Android中的proguard就是以此实现的，翻阅[TaskManager](https://android.googlesource.com/platform/tools/base/+/studio-master-dev/build-system/gradle-core/src/main/java/com/android/build/gradle/internal/TaskManager.java)发现Android Gradle Plugin中还有很多的transform，如jacoco、proguard、multi-dex以及InstantRun等等。</span><br><span class="line"></span><br><span class="line">### Transform基本原理</span><br><span class="line">Transform可以有很多个，他们形成责任链模式。Transform有输入和输出，输入是上一个transfrom的输入。因此我们可以在自定义的transfrom中修改.class文件，输出给下一个transform。第一个transfrom的输入就是编译打包过程中通过Java Compiler（javac）工具编译.java文件生成.class文件以及R.class文件。</span><br><span class="line">![](https://ws3.sinaimg.cn/large/006tNc79ly1fz1n0dikrjj30mb03owei.jpg)</span><br><span class="line"></span><br><span class="line">说完Transform的传递，来简单说一下transform输入数据的过滤。transform从两个维度过滤数据。</span><br><span class="line">- ContentType</span><br><span class="line">```java</span><br><span class="line">CONTENT_CLASS</span><br><span class="line">CONTENT_JARS</span><br><span class="line">CONTENT_RESOURCES</span><br><span class="line">CONTENT_NATIVE_LIBS</span><br><span class="line">CONTENT_DEX</span><br><span class="line">CONTENT_DEX_WITH_RESOURCES</span><br><span class="line">DATA_BINDING_BASE_CLASS_LOG_ARTIFACT</span><br></pre></td></tr></table></figure></p>
+<p>有些ContentType只能被Android Plugin使用。</p>
+<ul>
+<li>Scope<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">PROJECT_ONLY</span><br><span class="line">SCOPE_FULL_PROJECT</span><br><span class="line">SCOPE_FULL_WITH_IR_FOR_DEXING</span><br><span class="line">SCOPE_FULL_WITH_FEATURES</span><br><span class="line">SCOPE_FULL_WITH_IR_AND_FEATURES</span><br><span class="line">SCOPE_FEATURES</span><br><span class="line">SCOPE_FULL_LIBRARY_WITH_LOCAL_JARS</span><br><span class="line">SCOPE_IR_FOR_SLICING</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>同样的，我们只能用某些Scope。</p>
+<h3 id="Transform简单实现"><a href="#Transform简单实现" class="headerlink" title="Transform简单实现"></a>Transform简单实现</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestTransform</span> <span class="keyword">extends</span> <span class="title">Transform</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Project mProject;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">TestTransform</span><span class="params">(Project project)</span> </span>&#123;</span><br><span class="line">        mProject = project;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"TestTransform"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Set&lt;QualifiedContent.ContentType&gt; getInputTypes() &#123;</span><br><span class="line">        <span class="keyword">return</span> TransformManager.CONTENT_CLASS; <span class="comment">// ContentType 过滤</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Set&lt;? <span class="keyword">super</span> QualifiedContent.Scope&gt; getScopes() &#123;</span><br><span class="line">        <span class="keyword">return</span> TransformManager.SCOPE_FULL_PROJECT; <span class="comment">// Scope 过滤</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isIncremental</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transform</span><span class="params">(TransformInvocation transformInvocation)</span> <span class="keyword">throws</span> TransformException, InterruptedException, IOException </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.transform(transformInvocation);</span><br><span class="line">        <span class="comment">// 当前是否为增量编译</span></span><br><span class="line">        <span class="keyword">boolean</span> isIncremental = transformInvocation.isIncremental();</span><br><span class="line">        <span class="comment">// 消费型输入，可以从中获取jar包和class文件夹路径。需要输出给下一个任务</span></span><br><span class="line">        Collection&lt;TransformInput&gt; inputs = transformInvocation.getInputs();</span><br><span class="line">        <span class="comment">// OutputProvider管理输出路径，如果消费型输入为空，OutputProvider = null</span></span><br><span class="line">        TransformOutputProvider outputProvider = transformInvocation.getOutputProvider();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        <span class="keyword">if</span> (!isIncremental) &#123;</span><br><span class="line">            outputProvider.deleteAll();</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 获取输入</span></span><br><span class="line">        <span class="keyword">for</span> (TransformInput input : inputs) &#123;</span><br><span class="line">            <span class="comment">// 获取输入 .jar文件</span></span><br><span class="line">            <span class="keyword">for</span> (JarInput jarInput : input.getJarInputs()) &#123;</span><br><span class="line">                <span class="comment">// 这里可以修改文件达到目的</span></span><br><span class="line">                ...</span><br><span class="line">                <span class="comment">// 设置输出</span></span><br><span class="line">                File dest = outputProvider.getContentLocation(</span><br><span class="line">                        jarInput.getFile().getAbsolutePath(),</span><br><span class="line">                        jarInput.getContentTypes(),</span><br><span class="line">                        jarInput.getScopes(),</span><br><span class="line">                        Format.JAR);</span><br><span class="line">                FileUtils.copyFile(jarInput.getFile(), dest);</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="comment">// 获取输入  .class文件</span></span><br><span class="line">            <span class="keyword">for</span> (DirectoryInput directoryInput : input.getDirectoryInputs()) &#123;</span><br><span class="line">                <span class="comment">// 这里可以修改文件达到目的</span></span><br><span class="line">                ...</span><br><span class="line">                <span class="comment">// 设置输出</span></span><br><span class="line">                File dest = outputProvider.getContentLocation(</span><br><span class="line">                        directoryInput.getName(),</span><br><span class="line">                        directoryInput.getContentTypes(),</span><br><span class="line">                        directoryInput.getScopes(),</span><br><span class="line">                        Format.DIRECTORY);</span><br><span class="line">                FileUtils.copyDirectory(directoryInput.getFile(), dest);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>TransformInput<br>上一个transform的输出文件，分为JarInput和DirectoryInput。输入输出的.class文件都可以在build/intermediates/transforms中找到：<br><img src="https://ws4.sinaimg.cn/large/006tNc79ly1fz2g5e4po3j30cd043aa7.jpg" alt=""></p>
+</li>
+<li><p>TransformOutputProvider<br>transform输出，用来获取输出.class文件路径。</p>
+</li>
+</ul>
+<p>以上展示的transform代码，对.class文件没有任何修改的输出。Transform还有更高级的增量修改，可以看看<a href="http://quinnchen.me/2018/09/13/2018-09-13-asm-transform/" target="_blank" rel="noopener">这篇博客</a></p>
+<h2 id="Java字节码"><a href="#Java字节码" class="headerlink" title="Java字节码"></a>Java字节码</h2><p>理论就不说了。我们要掌握的是如何查看.java .kt文件字节码，然后参照源码和字节码一一对应。就像学习kotlin语言，你写好java版本的，然后用工具转换成kotlin版本参照学习。在AndroidStudio中居然没有什么比较简单的方式查看.java文件的字节码，插件也不是很好用，我们可以利用javap命令来查看：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javap -c XXX.class</span><br></pre></td></tr></table></figure></p>
+<p>kotlin文件到是在AndroidStuido中集成了工具，查看就会比较方便，如下：<br><img src="https://ws2.sinaimg.cn/large/006tNc79ly1fz2h13c6uvj30gh0el11e.jpg" alt=""><br><img src="https://ws1.sinaimg.cn/large/006tNc79ly1fz2h2mqf7fj31e70hftdu.jpg" alt=""><br>很好用，鼠标点到哪里，就对应高亮哪一块对应的字节码。PS：如果在kotlin代码中使用协程，在decomile的时候，as会死掉。应该是什么bug。</p>
+<h2 id="ASM-字节码控制框架"><a href="#ASM-字节码控制框架" class="headerlink" title="ASM 字节码控制框架"></a>ASM 字节码控制框架</h2><p>正常来说修改.class文件就是文件的读写，你可以在任意位置插入任意字节码，但是想要在特定的地方插入特定的字节码还是相当复杂的。市面上有很多字节码的修改框架，本篇使用的是ASM。举个小栗子，上一部分的hello函数中的CostCalculator.startCal(“hello”)，在.class文件中插入相同含义的字节码：</p>
+<ol>
+<li><p>拿到代码对应的字节码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GETSTATIC me/jiahuan/gradle_plugin_sample/CostCalculator.INSTANCE : Lme/jiahuan/gradle_plugin_sample/CostCalculator;</span><br><span class="line">LDC &quot;hello&quot;</span><br><span class="line">INVOKEVIRTUAL me/jiahuan/gradle_plugin_sample/CostCalculator.startCal (Ljava/lang/String;)V</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>一一对应写ASM代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mv.visitFieldInsn(GETSTATIC, &quot;me/jiahuan/gradle_plugin_sample/CostCalculator&quot;, &quot;INSTANCE&quot;, &quot;Lme/jiahuan/gradle_plugin_sample/CostCalculator;&quot;);</span><br><span class="line">mv.visitLdcInsn(&quot;hello&quot;);</span><br><span class="line">mv.visitMethodInsn(INVOKEVIRTUAL, &quot;me/jiahuan/gradle_plugin_sample/CostCalculator&quot;, &quot;startCal&quot;, &quot;(Ljava/lang/String;)V&quot;, false);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>一条对一条很简单。这里具体不讲解如何使用的，因为好难说清楚:)，直接看下面的具体实际例子，看看代码。PS：asm插入的字节码不会影响原来代码的行数，所以不用担心报错的时候堆栈行数不一致。</p>
+<h2 id="实例：统计每个函数的耗时"><a href="#实例：统计每个函数的耗时" class="headerlink" title="实例：统计每个函数的耗时"></a>实例：统计每个函数的耗时</h2><p>有这样一个需求，需要统计每个函数消耗的时间，找出一些比较耗时的函数进行优化。如果是传统的怎么做？每个函数进入的时候记录个时间，然后最后return的时候记录个时间，相减一下。如果是个小项目，可能动手每个函数加一加没什么问题，但是大项目要这么做就有点过份了。那了解了编译器修改.class文件的话就比较简单啦，在编译期间，在每个函数的入口和出口插桩字节码，实现和人手写代码一样的效果。这里只展示一下修改字节码的代码，其他的上面都有提到过，最后也可以看完整源代码。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestDirectoryInputHandler</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(File dir)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"class dir path = "</span> + dir.getAbsolutePath());</span><br><span class="line">        <span class="keyword">if</span> (dir.isDirectory() &amp;&amp; dir.exists()) &#123;</span><br><span class="line">            <span class="comment">// 递归遍历</span></span><br><span class="line">            <span class="keyword">for</span> (File file : dir.listFiles()) &#123;</span><br><span class="line">                handle(file);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            handleFile(dir);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handleFile</span><span class="params">(File file)</span> </span>&#123;</span><br><span class="line">        InputStream inputStream = <span class="keyword">null</span>;</span><br><span class="line">        OutputStream outputStream = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (file.getName().equals(<span class="string">"MainActivity.class"</span>)) &#123;</span><br><span class="line">                System.out.println(<span class="string">"find!!!!!!!!!!!"</span>);</span><br><span class="line">                inputStream = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">                ClassReader classReader = <span class="keyword">new</span> ClassReader(inputStream);</span><br><span class="line">                ClassWriter classWriter = <span class="keyword">new</span> ClassWriter(ClassWriter.COMPUTE_MAXS);</span><br><span class="line">                <span class="comment">// 自定义ClassVisitor</span></span><br><span class="line">                CallClassVisitor callClassVisitor = <span class="keyword">new</span> CallClassVisitor(classWriter, file.getName());</span><br><span class="line">                classReader.accept(callClassVisitor, <span class="number">0</span>);</span><br><span class="line">                <span class="comment">// 输出临时class文件路径</span></span><br><span class="line">                String tempFilePath = file.getParentFile().getAbsolutePath() + File.separator + file.getName() + <span class="string">".opt"</span>;</span><br><span class="line">                File tempFile = <span class="keyword">new</span> File(tempFilePath);</span><br><span class="line">                outputStream = <span class="keyword">new</span> FileOutputStream(tempFilePath);</span><br><span class="line">                outputStream.write(classWriter.toByteArray());</span><br><span class="line">                <span class="keyword">if</span> (tempFile.exists()) &#123;</span><br><span class="line">                    tempFile.renameTo(file);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (inputStream != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    inputStream.close();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (outputStream != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    outputStream.close();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">CallClassVisitor</span> <span class="keyword">extends</span> <span class="title">ClassVisitor</span> <span class="keyword">implements</span> <span class="title">Opcodes</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> String mClassName;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">CallClassVisitor</span><span class="params">(ClassVisitor cv, String className)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">super</span>(ASM6, cv);</span><br><span class="line">            mClassName = className;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> MethodVisitor <span class="title">visitMethod</span><span class="params">(<span class="keyword">int</span> access, String name, String desc, String signature, String[] exceptions)</span> </span>&#123;</span><br><span class="line">            System.out.println(<span class="string">"method name = "</span> + name + <span class="string">", signature = "</span> + signature + <span class="string">", desc = "</span> + desc);</span><br><span class="line">            MethodVisitor mv = <span class="keyword">super</span>.visitMethod(access, name, desc, signature, exceptions);</span><br><span class="line">            <span class="keyword">return</span> mv == <span class="keyword">null</span> ? <span class="keyword">null</span> : <span class="keyword">new</span> CallMethodVisitor(mv, mClassName, name, desc);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">CallMethodVisitor</span> <span class="keyword">extends</span> <span class="title">MethodVisitor</span> <span class="keyword">implements</span> <span class="title">Opcodes</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> String mName;</span><br><span class="line">        <span class="keyword">private</span> String mDesc;</span><br><span class="line">        <span class="keyword">private</span> String mClassName;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">CallMethodVisitor</span><span class="params">(MethodVisitor mv, String className, String name, String desc)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">super</span>(ASM6, mv);</span><br><span class="line">            mClassName = className;</span><br><span class="line">            mName = name;</span><br><span class="line">            mDesc = desc;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitCode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (mName.startsWith(<span class="string">"hello"</span>)) &#123;</span><br><span class="line"><span class="comment">//                GETSTATIC me/jiahuan/gradle_plugin_sample/CostCalculator.INSTANCE : Lme/jiahuan/gradle_plugin_sample/CostCalculator;</span></span><br><span class="line">                mv.visitFieldInsn(GETSTATIC, <span class="string">"me/jiahuan/gradle_plugin_sample/CostCalculator"</span>, <span class="string">"INSTANCE"</span>, <span class="string">"Lme/jiahuan/gradle_plugin_sample/CostCalculator;"</span>);</span><br><span class="line"><span class="comment">//                LDC "haha"</span></span><br><span class="line">                mv.visitLdcInsn(mClassName + mName + mDesc);</span><br><span class="line"><span class="comment">//                INVOKEVIRTUAL me/jiahuan/gradle_plugin_sample/CostCalculator.startCal (Ljava/lang/String;)V</span></span><br><span class="line">                mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">"me/jiahuan/gradle_plugin_sample/CostCalculator"</span>, <span class="string">"startCal"</span>, <span class="string">"(Ljava/lang/String;)V"</span>, <span class="keyword">false</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitInsn</span><span class="params">(<span class="keyword">int</span> opcode)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (mName.startsWith(<span class="string">"hello"</span>)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (opcode == RETURN) &#123;</span><br><span class="line"><span class="comment">//                    GETSTATIC me/jiahuan/gradle_plugin_sample/CostCalculator.INSTANCE : Lme/jiahuan/gradle_plugin_sample/CostCalculator;</span></span><br><span class="line">                    mv.visitFieldInsn(GETSTATIC, <span class="string">"me/jiahuan/gradle_plugin_sample/CostCalculator"</span>, <span class="string">"INSTANCE"</span>, <span class="string">"Lme/jiahuan/gradle_plugin_sample/CostCalculator;"</span>);</span><br><span class="line"><span class="comment">//                    LDC "haha"</span></span><br><span class="line">                    mv.visitLdcInsn(mClassName + mName + mDesc);</span><br><span class="line"><span class="comment">//                    INVOKEVIRTUAL me/jiahuan/gradle_plugin_sample/CostCalculator.endCal (Ljava/lang/String;)V</span></span><br><span class="line">                    mv.visitMethodInsn(INVOKEVIRTUAL, <span class="string">"me/jiahuan/gradle_plugin_sample/CostCalculator"</span>, <span class="string">"endCal"</span>, <span class="string">"(Ljava/lang/String;)V"</span>, <span class="keyword">false</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">super</span>.visitInsn(opcode);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上实现的是查找MainActivity.class中hello开头的函数，在函数的头和尾插入的统计耗时。以下是原MainActivity.kt以及编译经过transform之后.class文件的逆向：<br><img src="https://ws2.sinaimg.cn/large/006tNc79ly1fz2p3bhvrhj30xr0fu0xh.jpg" alt=""></p>
+<p><a href="https://github.com/jiahuanyu/gradle_plugin_sample" target="_blank" rel="noopener">Sample完整源码</a></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>此项技术可以应用于比较多的实用需求，比如埋点的插桩实现方式、方法性能检测以及日志监测等等需求。当然也可以直接生成某些类，实现和注解生成器一样的效果。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/11/13/使用kotlin语言编写Android gradle脚本/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JiaHuan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="碎片笔记">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/11/13/使用kotlin语言编写Android gradle脚本/" itemprop="url">使用Kotlin语言编写Andriod Gradle脚本</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-13T21:57:47+08:00">
+                2018-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>当我们通过AS新建一个新的项目的时候，工程的结构目录如下图所示<br><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fw9w0di4xoj30ct0a6dgp.jpg" alt=""></p>
+<p>其中，以<code>gradle</code>结尾的文件（图中红框圈出），是我们在Android开发中经常需要修改的<code>gradle</code>脚本文件。通常<code>gradle</code>脚本是由<code>Groovy</code>语言编写的，例如：<br><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fw9w8zxyinj30si0gxn0b.jpg" alt=""></p>
+<p>这种写法称为<code>DSL</code>，指的是用于一个特定领域的语言。<code>Groovy</code>本身不是<code>DSL</code>语言，它是一种通用语言，但是因为<code>Groovy</code>的语言的特性对<code>DSL</code>提供了很好的支持，<code>Kotlin</code>语言也是如此。<code>Groovy</code>以及<code>Kotlin</code>语言有一个这样的特性：如果一个函数的最后的一个参数是一个<code>lamda</code>表达式，则可以写在<code>()</code>之外，如果这个函数只有一个参数并且就是<code>lamda</code>表达式，那么<code>()</code>也可以省略。因此，以上图中显示的脚本的<code>{}</code>就可以理解为一个函数。</p>
+<h2 id="根目录下的-build-gradle-gt-build-gradle-kts"><a href="#根目录下的-build-gradle-gt-build-gradle-kts" class="headerlink" title="根目录下的 build.gradle =&gt; build.gradle.kts"></a>根目录下的 build.gradle =&gt; build.gradle.kts</h2><p><code>Kotlin</code>编写<code>gradle</code>脚本需要将脚本文件的后缀添加<code>kts</code>（kotlin-script）。</p>
+<ul>
+<li><p><code>build.gradle</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath &apos;com.android.tools.build:gradle:3.2.1&apos;</span><br><span class="line">        // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">        // in the individual module build.gradle files</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">task clean(type: Delete) &#123;</span><br><span class="line">    delete rootProject.buildDir</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>build.gradle.kts</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath(&quot;com.android.tools.build:gradle:3.2.0&quot;)</span><br><span class="line">        // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">        // in the individual module build.gradle files</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="settings-gradle-gt-settings-gradle-kts"><a href="#settings-gradle-gt-settings-gradle-kts" class="headerlink" title="settings.gradle =&gt; settings.gradle.kts"></a>settings.gradle =&gt; settings.gradle.kts</h2><p>既然根目录的<code>gradle</code>脚本修改了名字，那么就要告知<code>gradle</code>编译工具寻找修改名字之后的文件，因此要在<code>settings.gradle.kts</code>文件中指定。</p>
+<ul>
+<li><code>setting.gradle</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">include &apos;:app&apos;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>-<code>setting.gradle.kts</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">include(&quot;app&quot;)</span><br><span class="line">rootProject.buildFileName = &quot;build.gradle.kts&quot;</span><br></pre></td></tr></table></figure></p>
+<h2 id="Module中的-builde-gradle-gt-build-gradle-kts"><a href="#Module中的-builde-gradle-gt-build-gradle-kts" class="headerlink" title="Module中的 builde.gradle =&gt; build.gradle.kts"></a>Module中的 builde.gradle =&gt; build.gradle.kts</h2><p>- <code>build.grale</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.application&apos;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion 28</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId &quot;me.jiuahuan.gradle&quot;</span><br><span class="line">        minSdkVersion 18</span><br><span class="line">        targetSdkVersion 28</span><br><span class="line">        versionCode 1</span><br><span class="line">        versionName &quot;1.0.0&quot;</span><br><span class="line">        testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            minifyEnabled false</span><br><span class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation &apos;com.android.support:appcompat-v7:28.0.0&apos;</span><br><span class="line">    testImplementation &apos;junit:junit:4.12&apos;</span><br><span class="line">    androidTestImplementation &apos;com.android.support.test:runner:1.0.2&apos;</span><br><span class="line">    androidTestImplementation &apos;com.android.support.test.espresso:espresso-core:3.0.2&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>build.gradle.kts</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">plugins &#123;</span><br><span class="line">    id(&quot;com.android.application&quot;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion(28)</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId = &quot;me.jiahuan.gradle&quot;</span><br><span class="line">        minSdkVersion(18)</span><br><span class="line">        targetSdkVersion(28)</span><br><span class="line">        versionCode = 1</span><br><span class="line">        versionName = &quot;1.0.0&quot;</span><br><span class="line"></span><br><span class="line">        testInstrumentationRunner = &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        getByName(&quot;release&quot;) &#123;</span><br><span class="line">            isMinifyEnabled = false</span><br><span class="line">            proguardFiles(&quot;proguard-rules.pro&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation(&quot;com.android.support:appcompat-v7:28.0.0&quot;)</span><br><span class="line">    testImplementation(&quot;junit:junit:4.12&quot;)</span><br><span class="line">    androidTestImplementation(&quot;com.android.support.test:runner:1.0.2&quot;)</span><br><span class="line">    androidTestImplementation(&quot;com.android.support.test.espresso:espresso-core:3.0.2&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="统一第三方依赖版本管理"><a href="#统一第三方依赖版本管理" class="headerlink" title="统一第三方依赖版本管理"></a>统一第三方依赖版本管理</h2><p>通常在开发过程我们会统一规划第三方依赖库的版本或者统一编译版本，我们会在根目录的<code>build.gradle</code>中编写，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ext &#123;</span><br><span class="line">    config = [</span><br><span class="line">            compileSdkVersion: 27,  </span><br><span class="line">            minSdkVersion    : 19,</span><br><span class="line">            targetSdkVersion : 27,</span><br><span class="line">            versionCode      : 1,</span><br><span class="line">            versionName      : &quot;0.1.0&quot;,</span><br><span class="line">            supportVersion   : &quot;27.1.1&quot;  // support依赖库的版本</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后在module的<code>build.gradle</code>中可以这样编写<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">implementation &apos;com.android.support:appcompat-v7:&apos; + config.supportVersion</span><br><span class="line">implementation &apos;com.android.support:design:&apos; + config.supportVersion</span><br></pre></td></tr></table></figure></p>
+<p>但是在<code>Koltin</code>写法中并不是这样的，官方推荐的是新建一个叫<code>buildSrc</code>Module（这个也是实现gradle插件的方式之一），然后可以新建一个<code>Kotlin</code>配置文件来指定统一的版本号，如：</p>
+<p><img src="https://ws4.sinaimg.cn/large/006tNbRwly1fw9x1aoxraj30d00ec0tu.jpg" alt=""></p>
+<ul>
+<li><code>Config.kt</code><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> kotlinVersion = <span class="string">"1.2.21"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> androidGradleVersion = <span class="string">"3.0.1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Compile dependencies</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> supportVersion = <span class="string">"27.0.2"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> ankoVersion = <span class="string">"0.10.4"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> daggerVersion = <span class="string">"2.14.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> retrofitVersion = <span class="string">"2.3.0"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> okhttpVersion = <span class="string">"3.9.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> eventBusVersion = <span class="string">"2.4.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> picassoVersion = <span class="string">"2.5.2"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> priorityJobQueueVersion = <span class="string">"2.0.1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Unit tests</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> mockitoVersion = <span class="string">"2.13.0"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">object</span> Config &#123;</span><br><span class="line">    <span class="keyword">object</span> BuildPlugins &#123;</span><br><span class="line">        <span class="keyword">val</span> androidGradle = <span class="string">"com.android.tools.build:gradle:<span class="variable">$androidGradleVersion</span>"</span></span><br><span class="line">        <span class="keyword">val</span> kotlinGradlePlugin = <span class="string">"org.jetbrains.kotlin:kotlin-gradle-plugin:<span class="variable">$kotlinVersion</span>"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> Android &#123;</span><br><span class="line">        <span class="keyword">val</span> buildToolsVersion = <span class="string">"27.0.3"</span> </span><br><span class="line">        <span class="keyword">val</span> minSdkVersion = <span class="number">19</span></span><br><span class="line">        <span class="keyword">val</span> targetSdkVersion = <span class="number">27</span></span><br><span class="line">        <span class="keyword">val</span> compileSdkVersion = <span class="number">27</span></span><br><span class="line">        <span class="keyword">val</span> applicationId = <span class="string">"com.antonioleiva.bandhookkotlin"</span></span><br><span class="line">        <span class="keyword">val</span> versionCode = <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> versionName = <span class="string">"0.1"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> Libs &#123;</span><br><span class="line">        <span class="keyword">val</span> kotlin_std = <span class="string">"org.jetbrains.kotlin:kotlin-stdlib:<span class="variable">$kotlinVersion</span>"</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> TestLibs &#123;</span><br><span class="line">        <span class="keyword">val</span> junit = <span class="string">"junit:junit:4.12"</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>然后在需要的依赖的<code>build.gradle</code>脚本中这么写，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    implementation(Config.Libs.kotlin_std)</span><br><span class="line">    ...</span><br><span class="line">    androidTestImplementation(Config.TestLibs.mockito)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>关于<code>Kotlin DSL</code>写法的参考地址 <a href="https://github.com/gradle/kotlin-dsl" target="_blank" rel="noopener">https://github.com/gradle/kotlin-dsl</a><br></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/11/13/Android Jetpack 组件之 Lifecycle/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -359,158 +697,6 @@
 <h2 id="LifecycleOwner"><a href="#LifecycleOwner" class="headerlink" title="LifecycleOwner"></a>LifecycleOwner</h2><p><code>LifecycleOwner</code>是一个接口，它仅有一个方法<code>getLifecycle</code>，必须由子类实现，任何类都可以实现此接口，构建此类的生命周期感知。实现<code>LifecycleObserver</code>的类和实现<code>LifecyclerOwner</code>的类就组合成了经典的观察者和被观察者，任何被观察者都可以提供一个生命周期让观察者注册观察。</p>
 <h2 id="Lifecycles-UML"><a href="#Lifecycles-UML" class="headerlink" title="Lifecycles UML"></a>Lifecycles UML</h2><p><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fx0ohqf7ipj30v60grdhp.jpg" alt=""></p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://developer.android.google.cn/topic/libraries/architecture/lifecycle" target="_blank" rel="noopener">Lifecycles组件官方地址</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/10/16/使用kotlin语言编写Android gradle脚本/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JiaHuan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="碎片笔记">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/10/16/使用kotlin语言编写Android gradle脚本/" itemprop="url">使用Kotlin语言编写Andriod Gradle脚本</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-16T11:17:52+08:00">
-                2018-10-16
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>当我们通过AS新建一个新的项目的时候，工程的结构目录如下图所示<br><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fw9w0di4xoj30ct0a6dgp.jpg" alt=""></p>
-<p>其中，以<code>gradle</code>结尾的文件（图中红框圈出），是我们在Android开发中经常需要修改的<code>gradle</code>脚本文件。通常<code>gradle</code>脚本是由<code>Groovy</code>语言编写的，例如：<br><img src="https://ws2.sinaimg.cn/large/006tNbRwly1fw9w8zxyinj30si0gxn0b.jpg" alt=""></p>
-<p>这种写法称为<code>DSL</code>，指的是用于一个特定领域的语言。<code>Groovy</code>本身不是<code>DSL</code>语言，它是一种通用语言，但是因为<code>Groovy</code>的语言的特性对<code>DSL</code>提供了很好的支持，<code>Kotlin</code>语言也是如此。<code>Groovy</code>以及<code>Kotlin</code>语言有一个这样的特性：如果一个函数的最后的一个参数是一个<code>lamda</code>表达式，则可以写在<code>()</code>之外，如果这个函数只有一个参数并且就是<code>lamda</code>表达式，那么<code>()</code>也可以省略。因此，以上图中显示的脚本的<code>{}</code>就可以理解为一个函数。</p>
-<h2 id="根目录下的-build-gradle-gt-build-gradle-kts"><a href="#根目录下的-build-gradle-gt-build-gradle-kts" class="headerlink" title="根目录下的 build.gradle =&gt; build.gradle.kts"></a>根目录下的 build.gradle =&gt; build.gradle.kts</h2><p><code>Kotlin</code>编写<code>gradle</code>脚本需要将脚本文件的后缀添加<code>kts</code>（kotlin-script）。</p>
-<ul>
-<li><p><code>build.gradle</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath &apos;com.android.tools.build:gradle:3.2.1&apos;</span><br><span class="line">        // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">        // in the individual module build.gradle files</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">task clean(type: Delete) &#123;</span><br><span class="line">    delete rootProject.buildDir</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p><code>build.gradle.kts</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath(&quot;com.android.tools.build:gradle:3.2.0&quot;)</span><br><span class="line">        // NOTE: Do not place your application dependencies here; they belong</span><br><span class="line">        // in the individual module build.gradle files</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        google()</span><br><span class="line">        jcenter()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="settings-gradle-gt-settings-gradle-kts"><a href="#settings-gradle-gt-settings-gradle-kts" class="headerlink" title="settings.gradle =&gt; settings.gradle.kts"></a>settings.gradle =&gt; settings.gradle.kts</h2><p>既然根目录的<code>gradle</code>脚本修改了名字，那么就要告知<code>gradle</code>编译工具寻找修改名字之后的文件，因此要在<code>settings.gradle.kts</code>文件中指定。</p>
-<ul>
-<li><code>setting.gradle</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">include &apos;:app&apos;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>-<code>setting.gradle.kts</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">include(&quot;app&quot;)</span><br><span class="line">rootProject.buildFileName = &quot;build.gradle.kts&quot;</span><br></pre></td></tr></table></figure></p>
-<h2 id="Module中的-builde-gradle-gt-build-gradle-kts"><a href="#Module中的-builde-gradle-gt-build-gradle-kts" class="headerlink" title="Module中的 builde.gradle =&gt; build.gradle.kts"></a>Module中的 builde.gradle =&gt; build.gradle.kts</h2><p>- <code>build.grale</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">apply plugin: &apos;com.android.application&apos;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion 28</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId &quot;me.jiuahuan.gradle&quot;</span><br><span class="line">        minSdkVersion 18</span><br><span class="line">        targetSdkVersion 28</span><br><span class="line">        versionCode 1</span><br><span class="line">        versionName &quot;1.0.0&quot;</span><br><span class="line">        testInstrumentationRunner &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        release &#123;</span><br><span class="line">            minifyEnabled false</span><br><span class="line">            proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation &apos;com.android.support:appcompat-v7:28.0.0&apos;</span><br><span class="line">    testImplementation &apos;junit:junit:4.12&apos;</span><br><span class="line">    androidTestImplementation &apos;com.android.support.test:runner:1.0.2&apos;</span><br><span class="line">    androidTestImplementation &apos;com.android.support.test.espresso:espresso-core:3.0.2&apos;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li><code>build.gradle.kts</code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">plugins &#123;</span><br><span class="line">    id(&quot;com.android.application&quot;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">android &#123;</span><br><span class="line">    compileSdkVersion(28)</span><br><span class="line">    defaultConfig &#123;</span><br><span class="line">        applicationId = &quot;me.jiahuan.gradle&quot;</span><br><span class="line">        minSdkVersion(18)</span><br><span class="line">        targetSdkVersion(28)</span><br><span class="line">        versionCode = 1</span><br><span class="line">        versionName = &quot;1.0.0&quot;</span><br><span class="line"></span><br><span class="line">        testInstrumentationRunner = &quot;android.support.test.runner.AndroidJUnitRunner&quot;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    buildTypes &#123;</span><br><span class="line">        getByName(&quot;release&quot;) &#123;</span><br><span class="line">            isMinifyEnabled = false</span><br><span class="line">            proguardFiles(&quot;proguard-rules.pro&quot;)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    implementation(&quot;com.android.support:appcompat-v7:28.0.0&quot;)</span><br><span class="line">    testImplementation(&quot;junit:junit:4.12&quot;)</span><br><span class="line">    androidTestImplementation(&quot;com.android.support.test:runner:1.0.2&quot;)</span><br><span class="line">    androidTestImplementation(&quot;com.android.support.test.espresso:espresso-core:3.0.2&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="统一第三方依赖版本管理"><a href="#统一第三方依赖版本管理" class="headerlink" title="统一第三方依赖版本管理"></a>统一第三方依赖版本管理</h2><p>通常在开发过程我们会统一规划第三方依赖库的版本或者统一编译版本，我们会在根目录的<code>build.gradle</code>中编写，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ext &#123;</span><br><span class="line">    config = [</span><br><span class="line">            compileSdkVersion: 27,  </span><br><span class="line">            minSdkVersion    : 19,</span><br><span class="line">            targetSdkVersion : 27,</span><br><span class="line">            versionCode      : 1,</span><br><span class="line">            versionName      : &quot;0.1.0&quot;,</span><br><span class="line">            supportVersion   : &quot;27.1.1&quot;  // support依赖库的版本</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>然后在module的<code>build.gradle</code>中可以这样编写<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">implementation &apos;com.android.support:appcompat-v7:&apos; + config.supportVersion</span><br><span class="line">implementation &apos;com.android.support:design:&apos; + config.supportVersion</span><br></pre></td></tr></table></figure></p>
-<p>但是在<code>Koltin</code>写法中并不是这样的，官方推荐的是新建一个叫<code>buildSrc</code>Module（这个也是实现gradle插件的方式之一），然后可以新建一个<code>Kotlin</code>配置文件来指定统一的版本号，如：</p>
-<p><img src="https://ws4.sinaimg.cn/large/006tNbRwly1fw9x1aoxraj30d00ec0tu.jpg" alt=""></p>
-<ul>
-<li><code>Config.kt</code><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> kotlinVersion = <span class="string">"1.2.21"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> androidGradleVersion = <span class="string">"3.0.1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Compile dependencies</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> supportVersion = <span class="string">"27.0.2"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> ankoVersion = <span class="string">"0.10.4"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> daggerVersion = <span class="string">"2.14.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> retrofitVersion = <span class="string">"2.3.0"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> okhttpVersion = <span class="string">"3.9.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> eventBusVersion = <span class="string">"2.4.1"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> picassoVersion = <span class="string">"2.5.2"</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> priorityJobQueueVersion = <span class="string">"2.0.1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Unit tests</span></span><br><span class="line"><span class="keyword">private</span> const <span class="keyword">val</span> mockitoVersion = <span class="string">"2.13.0"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">object</span> Config &#123;</span><br><span class="line">    <span class="keyword">object</span> BuildPlugins &#123;</span><br><span class="line">        <span class="keyword">val</span> androidGradle = <span class="string">"com.android.tools.build:gradle:<span class="variable">$androidGradleVersion</span>"</span></span><br><span class="line">        <span class="keyword">val</span> kotlinGradlePlugin = <span class="string">"org.jetbrains.kotlin:kotlin-gradle-plugin:<span class="variable">$kotlinVersion</span>"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> Android &#123;</span><br><span class="line">        <span class="keyword">val</span> buildToolsVersion = <span class="string">"27.0.3"</span> </span><br><span class="line">        <span class="keyword">val</span> minSdkVersion = <span class="number">19</span></span><br><span class="line">        <span class="keyword">val</span> targetSdkVersion = <span class="number">27</span></span><br><span class="line">        <span class="keyword">val</span> compileSdkVersion = <span class="number">27</span></span><br><span class="line">        <span class="keyword">val</span> applicationId = <span class="string">"com.antonioleiva.bandhookkotlin"</span></span><br><span class="line">        <span class="keyword">val</span> versionCode = <span class="number">1</span></span><br><span class="line">        <span class="keyword">val</span> versionName = <span class="string">"0.1"</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> Libs &#123;</span><br><span class="line">        <span class="keyword">val</span> kotlin_std = <span class="string">"org.jetbrains.kotlin:kotlin-stdlib:<span class="variable">$kotlinVersion</span>"</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">object</span> TestLibs &#123;</span><br><span class="line">        <span class="keyword">val</span> junit = <span class="string">"junit:junit:4.12"</span></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>然后在需要的依赖的<code>build.gradle</code>脚本中这么写，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    implementation(Config.Libs.kotlin_std)</span><br><span class="line">    ...</span><br><span class="line">    androidTestImplementation(Config.TestLibs.mockito)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>关于<code>Kotlin DSL</code>写法的参考地址 <a href="https://github.com/gradle/kotlin-dsl" target="_blank" rel="noopener">https://github.com/gradle/kotlin-dsl</a><br></p>
 
           
         
@@ -1627,141 +1813,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.jiahuan.me/2018/04/25/AndroidStudio上传项目至maven仓库/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JiaHuan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpeg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="碎片笔记">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/04/25/AndroidStudio上传项目至maven仓库/" itemprop="url">AndroidStudio上传项目至maven仓库</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-04-25T00:00:00+08:00">
-                2018-04-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="注册并登陆"><a href="#注册并登陆" class="headerlink" title="注册并登陆"></a>注册并登陆</h2><p><a href="https://bintray.com/signup/oss" target="_blank" rel="noopener">https://bintray.com/signup/oss</a><br>登入之后如图所示：<br><img src="https://ws2.sinaimg.cn/large/006tNbRwgy1fv8147m439j30z00i2dhu.jpg" alt=""></p>
-<h2 id="新建仓库"><a href="#新建仓库" class="headerlink" title="新建仓库"></a>新建仓库</h2><p>点击左边的<code>Add New Repository</code>创建新的仓库<br><img src="https://ws3.sinaimg.cn/large/006tNbRwgy1fv815t6es8j30va0g8gnm.jpg" alt=""><br>填写相关信息<br><img src="https://ws2.sinaimg.cn/large/006tNbRwgy1fv817ozmrvj30hp0ld0u2.jpg" alt=""></p>
-<h2 id="新建Package"><a href="#新建Package" class="headerlink" title="新建Package"></a>新建Package</h2><p><img src="https://ws3.sinaimg.cn/large/006tNc79gy1fqow7k89iwj30ck0nmq4c.jpg" alt=""></p>
-<h2 id="配置项目"><a href="#配置项目" class="headerlink" title="配置项目"></a>配置项目</h2><ul>
-<li>打开工程目录中的build.gradle文件，添加插件。插件的最新版本可以在<a href="https://bintray.com/novoda/maven/bintray-release" target="_blank" rel="noopener">https://bintray.com/novoda/maven/bintray-release</a>查看</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"></span><br><span class="line">buildscript &#123;  </span><br><span class="line">    repositories &#123;  </span><br><span class="line">        google()  </span><br><span class="line">        jcenter()  </span><br><span class="line">    &#125;  </span><br><span class="line">    dependencies &#123;  </span><br><span class="line">        classpath &apos;com.android.tools.build:gradle:3.0.1&apos;  </span><br><span class="line">       	classpath &apos;com.novoda:bintray-release:0.8.1&apos;</span><br><span class="line">    &#125;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<ul>
-<li>打开要上传的Module中的build.gradle文件，应用插件，并且设置上传信息</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">apply plugin: &apos;com.novoda.bintray-release&apos;</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">publish &#123;</span><br><span class="line">    userOrg = &apos;注册的用户名&apos;                       // 注册的时候填写的用户名     </span><br><span class="line">    groupId = &apos;me.jiahuan.androidlearn.lint&apos;     </span><br><span class="line">    artifactId = &apos;lint-test&apos;                      // 项目名，与新建的Package的Name相同  </span><br><span class="line">    publishVersion = &apos;1.0.0&apos;                      // 版本号 </span><br><span class="line">    desc = &apos;test desc&apos;								// 描述信息</span><br><span class="line">    website = &apos;test website&apos;						// 项目网址</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">publish &#123;</span><br><span class="line">    userOrg = &apos;vendor-yu&apos;                       // 注册的时候填写的用户名</span><br><span class="line">    groupId = &apos;me.jiahuan.android.wheelview&apos;</span><br><span class="line">    artifactId = &apos;wheel-view&apos;                      // 项目名，与新建的Package的Name相同</span><br><span class="line">    publishVersion = &apos;0.5.2&apos;                      // 版本号</span><br><span class="line">    desc = &apos;Android 滚轮控件&apos;								// 描述信息</span><br><span class="line">    website = &apos;blog.jiahuan.me&apos;						// 项目网址</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="上传指令"><a href="#上传指令" class="headerlink" title="上传指令"></a>上传指令</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gradlew clean build bintrayUpload -PbintrayUser=你的用户名 -PbintrayKey=你的密钥 -PdryRun=false</span><br></pre></td></tr></table></figure>
-<h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><p>上传完毕后，在需要使用该库工程中的build.gralde，添加maven地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">...</span><br><span class="line">allprojects &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        ...</span><br><span class="line">        maven &#123;</span><br><span class="line">            url &quot;地址在仓库页面的右上角&quot; // url &apos;https://dl.bintray.com/vendor-yu/maven&apos;</span><br><span class="line">        &#125;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-<p>在module中的build.gradle添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">implementation &apos;$&#123;groupId&#125;:$&#123;artifactId&#125;:$&#123;version&#125;&apos;</span><br><span class="line">implementation &apos;me.jiahuan.android.wheelview:wheel-view:0.3.5&apos;</span><br></pre></td></tr></table></figure></p>
-<h2 id="参考项目"><a href="#参考项目" class="headerlink" title="参考项目"></a>参考项目</h2><p><a href="https://github.com/jiahuanyu/WheelView.git" target="_blank" rel="noopener">WheelView</a></p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://blog.csdn.net/fafaws3000/article/details/79422833" target="_blank" rel="noopener">使用bintray-release发布项目到jcenter bintray | 新的解决javadoc编码错误的方法</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1812,7 +1863,7 @@
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-count">12</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1871,7 +1922,7 @@
         <div class="copyright" >
   
   &copy;  2016 - 
-  <span itemprop="copyrightYear">2018</span>
+  <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
